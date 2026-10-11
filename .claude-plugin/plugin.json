@@ -1,6 +1,6 @@
 {
   "name": "esphome-rules",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "romkey's rules for AI-written ESPHome projects: scaffold, audit and release projects that follow them.",
   "author": {
     "name": "John Romkey",
