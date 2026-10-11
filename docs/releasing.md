@@ -62,8 +62,10 @@ workflow:
    version, refuses if `## [Unreleased]` is empty, moves those entries
    under the new version with today's date, and sets every
    `project_version`;
-3. opens a **Release vX.Y.Z** PR with the release notes, and starts CI and
-   Lint on it (a PR opened by a workflow doesn't start them itself).
+3. opens a **Release vX.Y.Z** PR with the release notes, and approves the
+   PR's CI and Lint runs (GitHub holds runs on PRs opened by a workflow
+   until someone approves them). If it can't, the run shows a warning: open
+   the PR and click **Approve and run workflows**.
 
 Review the PR and merge it when the checks pass. Merging tags the merge
 commit `vX.Y.Z` and runs the release steps below. To abandon a release,
