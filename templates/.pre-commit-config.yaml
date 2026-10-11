@@ -48,3 +48,12 @@ repos:
       - id: ruff-check
         args: [--fix]
       - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: datasheet-licenses
+        name: every datasheet has a -license.txt
+        entry: scripts/check-datasheets.sh
+        language: unsupported_script
+        pass_filenames: false
+        files: ^datasheets/

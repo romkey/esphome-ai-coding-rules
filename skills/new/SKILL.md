@@ -15,6 +15,7 @@ Arguments: `$ARGUMENTS` (repo name, then `library` or `app`; both optional).
    flash. For an app, also ask whether to publish installable firmware.
 3. Ask what the project does and what hardware it uses (boards, sensors,
    buses). Don't invent hardware details; leave TODOs for anything unknown.
+   Ask which license to use: MIT (the default) or another (RULES.md §11).
 4. Target directory: the current directory if it is empty or already named
    after the repo, otherwise `./<repo-name>`. Never overwrite an existing
    file without asking.
@@ -22,15 +23,20 @@ Arguments: `$ARGUMENTS` (repo name, then `library` or `app`; both optional).
    target, then delete `optional/` from the copy. If publishing firmware,
    first copy `optional/firmware-publishing/firmware` and `.../web` to the
    target root.
-6. Fill in placeholders everywhere: `REPO` → repo name, `PROJECT` → title,
+6. If the owner chose a license other than MIT, replace `LICENSE` with that
+   license's official text (`gh api licenses/<id> --jq .body`, placeholders
+   filled in) and update the README badge and License section. For each
+   datasheet added to `datasheets/`, add its `-license.txt` per
+   `datasheets/README.md`; ask for the source URL rather than guessing.
+7. Fill in placeholders everywhere: `REPO` → repo name, `PROJECT` → title,
    `romkey.REPO` → `romkey.<repo-name>`, the LICENSE year → current year.
    Replace `packages/example.yaml` and the README/docs prose with the real
    project, or leave them clearly marked as TODO if details are missing.
-7. Look up current versions (RULES.md §8): the latest esphome-lib tag and
+8. Look up current versions (RULES.md §8): the latest esphome-lib tag and
    the actions in `.github/workflows/`. Update any that are stale.
-8. `git init`, `ln -s AGENTS.md CLAUDE.md`, then
+9. `git init`, `ln -s AGENTS.md CLAUDE.md`, then
    `cp examples/secrets.yaml.example examples/secrets.yaml` and run
    `docker compose run --rm validate` and `docker compose run --rm lint`.
    Fix failures.
-9. Report what you created, what is still TODO, and what you didn't test.
+10. Report what you created, what is still TODO, and what you didn't test.
    Don't create a GitHub repo, commit, or push unless asked.

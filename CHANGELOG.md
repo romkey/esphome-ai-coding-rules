@@ -6,6 +6,14 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Datasheets live in `datasheets/`, each with a `<name>-license.txt`
+  crediting the manufacturer; a pre-commit hook enforces it, and README
+  License sections say datasheets aren't covered by the repo's license.
+- On first use, ask the owner whether to use MIT or another license, and
+  use the chosen license's official text instead of MIT.
+
 ## [0.2.0] - 2026-10-11
 
 ### Added

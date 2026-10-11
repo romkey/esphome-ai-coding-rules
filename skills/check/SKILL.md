@@ -16,12 +16,17 @@ Audit this repository against esphome-ai-coding-rules. Arguments:
    workflows (including stale action versions: look them up), Renovate,
    release setup, README order/badges/AI disclosure, CHANGELOG, docs/,
    AGENTS.md, LICENSE.
-3. If the tools are available, run `docker compose run --rm validate` and
+3. If this repo hasn't been set up with these rules before (no AGENTS.md
+   pointing at them), ask the owner whether to use MIT or keep/choose
+   another license before changing `LICENSE` (RULES.md §11). Check every
+   file in `datasheets/` has its `-license.txt` and the README says the
+   datasheets aren't covered by the repo's license.
+4. If the tools are available, run `docker compose run --rm validate` and
    `docker compose run --rm lint`.
-4. Report findings grouped by RULES.md section, most important first, each
+5. Report findings grouped by RULES.md section, most important first, each
    with the file and a one-line fix. Note anything that is deliberately
    different (e.g. a library without firmware/) as fine, not a finding.
-5. With `fix`: apply the fixes, re-run validate and lint, update
+6. With `fix`: apply the fixes, re-run validate and lint, update
    CHANGELOG.md under Unreleased, and summarize. Ask before anything
    destructive, such as deleting or renaming files that users may reference
    (packages, substitutions, entity names are breaking changes).

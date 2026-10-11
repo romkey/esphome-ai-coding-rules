@@ -19,6 +19,8 @@ Canonical URL: https://github.com/romkey/esphome-ai-coding-rules/blob/main/RULES
   what you did not test, e.g. "compiles; not tried on hardware".
 - **Never trust your memory for versions.** Look up current releases of
   actions, tools, ESPHome and esphome-lib (see §8).
+- **When first applying these rules to a repo**, new or existing, ask the
+  owner which license to use (§11) before adding or changing `LICENSE`.
 - Small, focused commits with messages that say why. Don't push, tag or
   release without being asked.
 
@@ -31,9 +33,10 @@ examples/          buildable device configs: board + pins live here
 examples/common/   config shared by examples (not built on its own)
 firmware/          optional, apps only: published, secret-free configs
 tests/             optional: pytest unit tests for component logic
+datasheets/        manufacturer datasheets, each with a -license.txt (§5)
 docs/              configuration.md, overview.md
 scripts/           list-configs.sh, changelog-section.sh, bump-version.sh,
-                   collect-firmware.sh
+                   collect-firmware.sh, check-datasheets.sh
 .github/           workflows/ci.yaml, lint.yaml, release.yaml
 compose.yaml  renovate.json  .pre-commit-config.yaml  .yamllint.yaml
 .gitignore  .clang-format  README.md  CHANGELOG.md  LICENSE  AGENTS.md
@@ -111,6 +114,16 @@ compose.yaml  renovate.json  .pre-commit-config.yaml  .yamllint.yaml
   CI runs them.
 - Every component option appears in at least one example so CI compiles it.
 
+**Datasheets** live in `datasheets/`. Each has a license file named after
+it without the extension plus `-license.txt` (`SCD4x.pdf` →
+`SCD4x-license.txt`) saying the manufacturer owns it, it isn't covered by
+the repo's license, and where to find the manufacturer's terms, with the
+source URL and retrieval date. Use the template in
+[`templates/datasheets/README.md`](templates/datasheets/README.md); never
+invent the URL. If the terms forbid redistribution, link instead of
+committing the PDF. The pre-commit hook `datasheet-licenses` fails when a
+license file is missing.
+
 ## 6. Docker
 
 Use [`templates/compose.yaml`](templates/compose.yaml) unchanged except for
@@ -133,7 +146,8 @@ via OTA or https://web.esphome.io instead.
   skipped by `list-configs.sh`).
 - [`.pre-commit-config.yaml`](templates/.pre-commit-config.yaml) holds every
   lint and format check (yamllint, actionlint, shellcheck, clang-format,
-  ruff, whitespace, large files, private keys). The same hooks run via
+  ruff, whitespace, large files, private keys, datasheet licenses). The
+  same hooks run via
   `docker compose run --rm lint`, as a git hook (`uvx pre-commit install`),
   and in CI.
 
@@ -221,7 +235,8 @@ Full explanation: [docs/releasing.md](docs/releasing.md).
 5. Technical details: hardware, wiring table, I2C addresses, datasheet links
 6. Build and use: Docker commands, using packages remotely, flashing
    (and the web installer link, if firmware is published)
-7. License
+7. License: the repo's license, and, if `datasheets/` exists, that the
+   datasheets belong to their manufacturers and aren't covered by it
 
 Badges, in this order, exactly this style. Only CI/Lint status may show red,
 and only because a build failed:
@@ -232,6 +247,9 @@ and only because a build failed:
 [![ESPHome](https://img.shields.io/badge/ESPHome-packages-18BCF2?logo=esphome&logoColor=white)](https://esphome.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ```
+
+For another license, use its SPDX id in the license badge
+(`License-Apache--2.0-yellow`; shields.io needs `--` for a literal `-`).
 
 Use `ESPHome-external%20component` instead of `ESPHome-packages` for a
 component repo. Add a release badge once tagged:
@@ -261,7 +279,15 @@ follow these rules, plus anything project-specific.
 
 ## 11. License
 
-MIT, in `LICENSE`, `Copyright (c) <year> John Romkey`.
+- Default: MIT, in `LICENSE`, `Copyright (c) <year> John Romkey`.
+- The first time these rules are applied to a repo, ask the owner: "MIT,
+  or a different license?" If different, use that license's official text
+  (`gh api licenses/<spdx-id-lowercase> --jq .body`, filling in its year
+  and name placeholders) and never copy the MIT `LICENSE`. Match the
+  README badge and License section to it.
+- Never change an existing repo's license without the owner's explicit
+  confirmation; if it already has one, ask whether to keep it.
+- The license covers the repo's own work, not `datasheets/` (§5).
 
 ## 12. Before finishing
 

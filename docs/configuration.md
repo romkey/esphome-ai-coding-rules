@@ -35,6 +35,9 @@ when starting a project. `/esphome-rules:new` does all of this for you.
 | `.clang-format` | ESPHome's C++ style | Nothing |
 | `.gitignore` | Build output, secrets, `local*` configs | Nothing |
 | `README.md`, `CHANGELOG.md`, `docs/`, `AGENTS.md` | Skeletons in the required order | Fill in |
+| `LICENSE` | MIT | Replace if the owner picks another license |
+| `datasheets/README.md` | Datasheet + `-license.txt` convention and template | Add datasheets, or delete the directory |
+| `scripts/check-datasheets.sh` | pre-commit check that every datasheet has its license file | Nothing |
 | `optional/firmware-publishing/` | Firmware + web installer for apps | Copy `firmware/` and `web/` to the root if wanted, then delete `optional/` |
 
 ## One-time GitHub setup
