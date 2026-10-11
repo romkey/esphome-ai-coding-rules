@@ -5,6 +5,7 @@
 *.bin
 *.elf
 *.uf2
+*.hex
 dist/
 site/
 

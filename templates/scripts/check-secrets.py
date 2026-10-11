@@ -21,6 +21,8 @@ import re
 import sys
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parent.parent
 ALLOW = "not-a-secret"
 # Real secrets shorter than this are too likely to match ordinary text.
@@ -36,28 +38,32 @@ YAML = (".yaml", ".yml")
 
 
 def parse_values(path: Path) -> dict[str, str]:
-    """Top-level `key: value` pairs from a flat secrets file."""
-    values = {}
-    for line in path.read_text(errors="replace").splitlines():
-        match = re.match(r"^([A-Za-z0-9_]+):\s*(.+?)\s*$", line)
-        if match:
-            values[match.group(1)] = match.group(2).strip("'\"")
-    return values
+    """Top-level key/value pairs of a secrets file, parsed as YAML so quotes
+    and trailing comments are handled the way ESPHome handles them."""
+    try:
+        data = yaml.safe_load(path.read_text(errors="replace"))
+    except yaml.YAMLError:
+        print(f"{path}: not valid YAML; skipped", file=sys.stderr)
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    return {str(k): str(v) for k, v in data.items() if v is not None}
 
 
-def real_secrets() -> dict[str, str]:
-    """Values from local secrets.yaml files, minus the example dummies."""
+def local_values() -> dict[str, str]:
+    """Maps each value in local secrets.yaml files to the name of its key,
+    minus the dummies in secrets.yaml.example. Only key names are reported."""
     dummies = set()
     for example in ROOT.glob("**/secrets.yaml.example"):
         dummies.update(parse_values(example).values())
-    secrets = {}
+    names_by_value = {}
     for path in ROOT.glob("**/secrets.yaml"):
         if ".esphome" in path.parts:
             continue
-        for key, value in parse_values(path).items():
+        for key_name, value in parse_values(path).items():
             if len(value) >= MIN_SECRET_LENGTH and value not in dummies:
-                secrets[value] = key
-    return secrets
+                names_by_value[value] = key_name
+    return names_by_value
 
 
 def literal(value: str) -> bool:
@@ -70,7 +76,7 @@ def literal(value: str) -> bool:
     return not value.endswith(":")
 
 
-def check(path: Path, secrets: dict[str, str]) -> list[str]:
+def check(path: Path, names_by_value: dict[str, str]) -> list[str]:
     try:
         text = path.read_text()
     except (UnicodeDecodeError, OSError):
@@ -82,16 +88,21 @@ def check(path: Path, secrets: dict[str, str]) -> list[str]:
         else path
     )
     is_config = name.endswith(YAML) and not name.startswith("secrets.")
-    in_esphome_dir = rel.parts[:1] in (("examples",), ("firmware",), ("packages",))
-    in_firmware = rel.parts[:1] == ("firmware",)
+    # Match the directories anywhere in the path, so nested trees such as
+    # templates/optional/firmware-publishing/firmware/ are checked too.
+    dirs = set(rel.parts[:-1])
+    in_esphome_dir = bool(dirs & {"examples", "firmware", "packages"})
+    in_firmware = "firmware" in dirs
     problems = []
     for number, line in enumerate(text.splitlines(), 1):
         if ALLOW in line:
             continue
         where = f"{rel}:{number}"
-        for value, key in secrets.items():
+        for value, key_name in names_by_value.items():
             if value in line:
-                problems.append(f"{where}: contains the value of secrets.yaml '{key}'")
+                problems.append(
+                    f"{where}: contains the value of secrets.yaml '{key_name}'"
+                )
         if not (is_config and in_esphome_dir):
             continue
         if in_firmware and "!secret" in line:
@@ -105,13 +116,13 @@ def check(path: Path, secrets: dict[str, str]) -> list[str]:
 
 
 def main(argv: list[str]) -> int:
-    secrets = real_secrets()
+    names_by_value = local_values()
     problems = []
     for name in argv:
         path = Path(name)
         if path.name == "secrets.yaml.example" or not path.is_file():
             continue
-        problems.extend(check(path, secrets))
+        problems.extend(check(path, names_by_value))
     for problem in problems:
         print(problem, file=sys.stderr)
     if problems:
