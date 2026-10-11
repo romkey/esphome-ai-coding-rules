@@ -43,6 +43,13 @@
     },
     {
       "customType": "regex",
+      "description": "gitleaks image in workflows and compose.yaml",
+      "managerFilePatterns": ["/\\.ya?ml$/"],
+      "matchStrings": ["(?<depName>ghcr\\.io/gitleaks/gitleaks):(?<currentValue>v\\d+\\.\\d+\\.\\d+)"],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
       "description": "ESP Web Tools in the firmware install page",
       "managerFilePatterns": ["/(^|/)web/.+\\.html$/"],
       "matchStrings": ["unpkg\\.com/(?<depName>esp-web-tools)@(?<currentValue>\\d+\\.\\d+\\.\\d+)"],

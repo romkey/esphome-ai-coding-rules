@@ -21,6 +21,11 @@ Canonical URL: https://github.com/romkey/esphome-ai-coding-rules/blob/main/RULES
   actions, tools, ESPHome and esphome-lib (see §8).
 - **When first applying these rules to a repo**, new or existing, ask the
   owner which license to use (§11) before adding or changing `LICENSE`.
+- **Never expose secrets.** Don't put real secret values in code, docs,
+  commit messages, PR text, issues or chat, and don't print `secrets.yaml`.
+  Configs use `!secret`. If you find a real secret in the repo or its
+  history, stop and tell the owner to rotate it; rewriting history doesn't
+  make it secret again.
 - Small, focused commits with messages that say why. `main` is protected:
   work on a branch and open a pull request; never push to `main`. Don't
   push, merge, tag or release without being asked.
@@ -37,10 +42,11 @@ tests/             optional: pytest unit tests for component logic
 datasheets/        manufacturer datasheets, each with a -license.txt (§5)
 docs/              configuration.md, overview.md
 scripts/           list-configs.sh, changelog-section.sh, bump-version.sh,
-                   collect-firmware.sh, check-datasheets.sh, setup-github.sh
+                   collect-firmware.sh, check-datasheets.sh, check-secrets.py,
+                   setup-github.sh
 .github/           workflows/ci.yaml, lint.yaml, release.yaml
 compose.yaml  renovate.json  .pre-commit-config.yaml  .yamllint.yaml
-.gitignore  .clang-format  README.md  CHANGELOG.md  LICENSE  SECURITY.md
+.gitleaks.toml  .gitignore  .clang-format  README.md  CHANGELOG.md  LICENSE  SECURITY.md
 AGENTS.md
 ```
 
@@ -149,7 +155,7 @@ image pins. It mounts the whole repo so `../packages/` includes resolve,
 keeps toolchains and the compiler cache in a named volume at `/cache` and
 build trees in one at `/build` (the ESPHome image's own convention), pulls
 the floating `stable` tag daily, honors `ESPHOME_VERSION`, and provides
-`esphome`, `validate`, `build`, `dashboard` and `lint` services. Configs are
+`esphome`, `validate`, `build`, `dashboard`, `lint` and `secrets` services. Configs are
 found by `scripts/list-configs.sh`, so nothing needs editing when one is
 added. Docker Desktop on macOS cannot pass USB through; document flashing
 via OTA or https://web.esphome.io instead.
@@ -162,10 +168,25 @@ via OTA or https://web.esphome.io instead.
   must be base64 of 32 bytes); CI copies it.
 - Personal device configs go in `examples/local-*.yaml` (ignored, and
   skipped by `list-configs.sh`).
+- **Secrets never reach the repo.** The pre-commit hooks enforce it:
+  - `esphome-secrets` (`scripts/check-secrets.py`) fails if a value from
+    your local `secrets.yaml` appears in any committed file, if an ESPHome
+    config sets `password`, `ssid`, `key` and similar to a literal instead
+    of `!secret` or a substitution, or if a `firmware/` config uses
+    `!secret`. It names the file, line and key, never the value.
+    `# not-a-secret` on a line allows it.
+  - `gitleaks` checks staged changes for tokens and keys; the Lint job and
+    `docker compose run --rm secrets` scan the whole history.
+    [`.gitleaks.toml`](templates/.gitleaks.toml) exempts only
+    `secrets.yaml.example`; accept a false positive by adding its
+    fingerprint to `.gitleaksignore`.
+  - `no-firmware-images` rejects `.bin`/`.elf`/`.uf2`/`.hex`: a firmware
+    image contains the Wi-Fi credentials it was built with. They're also
+    gitignored, with `dist/` and `site/`.
 - [`.pre-commit-config.yaml`](templates/.pre-commit-config.yaml) holds every
   lint and format check (yamllint, actionlint, shellcheck, clang-format,
-  ruff, whitespace, large files, private keys, datasheet licenses). The
-  same hooks run via
+  ruff, whitespace, large files, private keys, secrets, firmware images,
+  datasheet licenses). The same hooks run via
   `docker compose run --rm lint`, as a git hook (`uvx pre-commit install`),
   and in CI.
 
@@ -193,9 +214,11 @@ Versions on 2026-10-11, for sanity checking only: `actions/checkout@v7`,
 **Protected main.** Every change reaches `main` through a pull request,
 squash-merged, and only when the required checks **CI passed** and
 **Lint** pass on an up-to-date branch. `scripts/setup-github.sh` applies
-this as a ruleset, plus secret scanning with push protection, Dependabot
-alerts, private vulnerability reporting, CodeQL default setup, read-only
-workflow tokens and branch deletion on merge. Run it once when the GitHub
+this as a ruleset, plus secret scanning with push protection (and generic
+patterns and validity checks where GitHub Secret Protection is available),
+Dependabot alerts, private vulnerability
+reporting, CodeQL default setup, read-only workflow tokens and branch
+deletion on merge. Run it once when the GitHub
 repo is created (re-running is safe). Keep the required checks reporting:
 
 - Never use `paths`/`paths-ignore` on a workflow that provides a required
@@ -209,7 +232,8 @@ repo is created (re-running is safe). Keep the required checks reporting:
   separately with `gh workflow run` do not satisfy the PR's required
   checks.
 
-**lint.yaml**: runs pre-commit on all files (job **Lint**).
+**lint.yaml**: runs pre-commit on all files and gitleaks over the whole
+git history (job **Lint**).
 
 **ci.yaml**: finds configs with `scripts/list-configs.sh`, then a matrix
 job per config runs `esphome config` and `esphome compile`, skipped when a

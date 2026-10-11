@@ -37,6 +37,13 @@ repos:
     hooks:
       - id: shellcheck
 
+  # Secrets (RULES.md §7). gitleaks checks staged changes for tokens and
+  # keys; CI and `docker compose run --rm secrets` scan the whole history.
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
+
   # Custom components: format like upstream ESPHome.
   - repo: https://github.com/pre-commit/mirrors-clang-format
     rev: v13.0.1
@@ -59,3 +66,13 @@ repos:
         language: python
         pass_filenames: false
         files: ^(templates/\.github/workflows/ci\.yaml|\.github/workflows/ci\.yaml|scripts/sync-ci\.py)$
+      - id: esphome-secrets
+        name: no real or hard-coded ESPHome secrets
+        entry: templates/scripts/check-secrets.py
+        language: python
+        types: [text]
+      - id: no-firmware-images
+        name: no firmware images
+        entry: Firmware images contain the Wi-Fi credentials they were built with; don't commit them
+        language: fail
+        files: \.(bin|elf|uf2|hex)$
