@@ -11,4 +11,5 @@ first.
   `templates/.github/workflows/ci.yaml` and run `scripts/sync-ci.py`.
 - After changing `skills/` or `.claude-plugin/`, run `claude plugin validate .`.
 - A release bumps `version` in `.claude-plugin/plugin.json` to match the tag.
+- `main` is protected: branch, open a PR, and let CI and Lint pass.
 - Keep RULES.md succinct: it is read in full by every AI using it.

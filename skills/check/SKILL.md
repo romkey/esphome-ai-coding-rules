@@ -21,12 +21,18 @@ Audit this repository against esphome-ai-coding-rules. Arguments:
    another license before changing `LICENSE` (RULES.md §11). Check every
    file in `datasheets/` has its `-license.txt` and the README says the
    datasheets aren't covered by the repo's license.
-4. If the tools are available, run `docker compose run --rm validate` and
+4. If `gh` is available, check the GitHub side too: a "Protect main"
+   ruleset requiring "CI passed" and "Lint"
+   (`gh api repos/{owner}/{repo}/rulesets`), and secret scanning enabled
+   (`gh api repos/{owner}/{repo} --jq .security_and_analysis`). Fixing
+   these means running `scripts/setup-github.sh`, which changes repo
+   settings: ask first.
+5. If the tools are available, run `docker compose run --rm validate` and
    `docker compose run --rm lint`.
-5. Report findings grouped by RULES.md section, most important first, each
+6. Report findings grouped by RULES.md section, most important first, each
    with the file and a one-line fix. Note anything that is deliberately
    different (e.g. a library without firmware/) as fine, not a finding.
-6. With `fix`: apply the fixes, re-run validate and lint, update
+7. With `fix`: apply the fixes, re-run validate and lint, update
    CHANGELOG.md under Unreleased, and summarize. Ask before anything
    destructive, such as deleting or renaming files that users may reference
    (packages, substitutions, entity names are breaking changes).

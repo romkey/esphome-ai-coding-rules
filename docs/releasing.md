@@ -42,9 +42,11 @@ a version with no changelog section, so a release can't go out undocumented.
 
 ## Branches
 
-`main` is always releasable: CI and Lint pass on every merge. Releases are
-cut from `main`. No release branches; if an old major ever needs a fix,
-branch from its tag then.
+`main` is protected: every change arrives through a squash-merged PR whose
+**CI passed** and **Lint** checks pass, so `main` is always releasable.
+Releases are cut from `main`. The only other long-lived names are
+`release/vX.Y.Z` branches, which exist just until their release PR merges.
+If an old major ever needs a fix, branch from its tag then.
 
 ## Cutting a release
 
@@ -53,42 +55,40 @@ choose the bump and run. Patch is the default; minor resets patch to 0;
 major resets minor and patch to 0 (1.4.2 → 1.4.3, 1.5.0 or 2.0.0). The
 workflow:
 
-1. refuses to run from anything but `main`, or if the latest CI run on
-   `main` didn't pass;
-2. runs `scripts/bump-version.sh`, which finds the latest `vX.Y.Z` tag
-   (none yet means 0.0.0), computes the next version, refuses if
-   `## [Unreleased]` is empty, moves those entries under the new version
-   with today's date, and sets every `project_version`;
-3. commits `Release vX.Y.Z` as github-actions[bot], tags, pushes to `main`;
-4. carries on with the release steps below.
+1. refuses to run from anything but `main`, or if CI for that commit
+   didn't pass;
+2. runs `scripts/bump-version.sh` on a new `release/vX.Y.Z` branch: it
+   finds the latest `vX.Y.Z` tag (none yet means 0.0.0), computes the next
+   version, refuses if `## [Unreleased]` is empty, moves those entries
+   under the new version with today's date, and sets every
+   `project_version`;
+3. opens a **Release vX.Y.Z** PR with the release notes, and starts CI and
+   Lint on it (a PR opened by a workflow doesn't start them itself).
 
-If `main` has branch protection that blocks direct pushes, allow
-github-actions to bypass it, or release by hand.
+Review the PR and merge it when the checks pass. Merging tags the merge
+commit `vX.Y.Z` and runs the release steps below. To abandon a release,
+close the PR; nothing is tagged.
 
 **With Claude Code:** `/esphome-rules:release` proposes the bump from the
-Unreleased entries, then either runs the workflow for you or does the steps
-locally, and asks before pushing.
+Unreleased entries, runs the workflow, and tells you when the PR is ready
+to merge.
 
-**By hand:**
+**By hand** (on a branch, through a PR like any other change):
 
-1. Make sure `main` is clean, current and green.
-2. Pick the version from the Unreleased entries using the table above.
+1. Start from an up-to-date, green `main`.
+2. Pick the bump from the Unreleased entries using the table above.
 3. `scripts/bump-version.sh <patch|minor|major>` updates CHANGELOG.md and
    every `project_version` and prints the new version. Update any pinned
    `@vX.Y.Z` self-references in README/docs yourself.
 4. Check: `scripts/changelog-section.sh X.Y.Z` and
    `docker compose run --rm validate`.
-5. Commit and tag:
-
-   ```bash
-   git commit -am "Release vX.Y.Z"
-   git tag -a vX.Y.Z -m "vX.Y.Z"
-   git push origin main vX.Y.Z
-   ```
+5. Commit on a `release/vX.Y.Z` branch, push, and open a PR titled
+   `Release vX.Y.Z`. Merging it tags and publishes, as above.
 
 ## What the release workflow does
 
-`.github/workflows/release.yaml`, after the bump (or on a tag you pushed):
+`.github/workflows/release.yaml`, once the release PR merges (or on a tag
+you pushed):
 
 1. Checks the CHANGELOG section exists and every `project_version` equals
    the tag. Fails loudly otherwise; delete the tag, fix, re-tag.
@@ -122,7 +122,9 @@ configs instead:
 
 ## If a release goes wrong
 
-- Workflow failed before the Release was created: fix on `main`, then move
-  the tag: `git tag -d vX.Y.Z && git push origin :vX.Y.Z`, re-tag, push.
+- Release PR's checks fail: fix on a normal PR to `main`, close the release
+  PR, delete its branch, and run the Release workflow again.
+- Tagged, but the Release wasn't created: fix the cause, then re-run the
+  failed jobs of that Release run from the Actions tab.
 - A bad release is already public: don't rewrite it. Release a patch
   (`X.Y.Z+1`) with the fix, and mark the bad one in its notes.

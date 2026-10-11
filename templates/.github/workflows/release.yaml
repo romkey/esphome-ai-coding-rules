@@ -1,13 +1,15 @@
 name: Release
 
-# Two ways to release (see docs/releasing.md in esphome-ai-coding-rules):
-# - Actions tab -> Release -> Run workflow, choosing patch, minor or major.
-#   The prepare job bumps the version, commits, tags and pushes, then the
-#   release jobs below run on the new tag.
-# - Push a vX.Y.Z tag yourself; prepare is skipped.
+# main is protected, so releases go through a PR (see docs/releasing.md in
+# esphome-ai-coding-rules):
+# 1. Actions tab -> Release -> Run workflow, choosing patch, minor or major.
+#    The prepare job bumps the version on a release/vX.Y.Z branch, opens a
+#    "Release vX.Y.Z" PR, and starts CI and Lint on it (PRs opened by a
+#    workflow don't trigger them on their own).
+# 2. Merge the PR once checks pass. The tag job tags the merge commit and
+#    the release jobs publish it.
+# Pushing a vX.Y.Z tag yourself also works.
 on:
-  push:
-    tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
   workflow_dispatch:
     inputs:
       bump:
@@ -15,12 +17,17 @@ on:
         type: choice
         options: [patch, minor, major]
         default: patch
+  pull_request:
+    types: [closed]
+    branches: [main]
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
 
 permissions:
   contents: read
 
 concurrency:
-  group: release
+  group: release-${{ github.event_name }}
   cancel-in-progress: false
 
 env:
@@ -28,15 +35,14 @@ env:
 
 jobs:
   prepare:
-    name: Bump version
+    name: Open release PR
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: write
-      actions: read
-    outputs:
-      tag: ${{ steps.bump.outputs.tag }}
+      pull-requests: write
+      actions: write
     steps:
       - name: Only release from main
         if: github.ref != 'refs/heads/main'
@@ -55,37 +61,75 @@ jobs:
           state() { gh run list --workflow ci.yaml --limit 1 --json status,conclusion \
             --jq '.[] | "\(.status) \(.conclusion)"' "$@"; }
           run=$(state --commit "$GITHUB_SHA")
-          # Docs-only commits skip CI; fall back to the latest run on main.
           [ -n "$run" ] || run=$(state --branch main --status completed)
           if [ "$run" != "completed success" ]; then
             echo "::error::CI for this commit is '${run:-missing}'; wait for it to pass"
             exit 1
           fi
 
-      - name: Bump, commit, tag and push
-        id: bump
+      - name: Bump version on a release branch and open a PR
         env:
           BUMP: ${{ inputs.bump }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           version=$(scripts/bump-version.sh "$BUMP")
+          branch="release/v$version"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
           git commit -am "Release v$version"
-          git tag -a "v$version" -m "v$version"
-          git push origin HEAD:main "v$version"
-          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+          git push origin "$branch"
+          {
+            echo "Merge to tag and publish **v$version**. Release notes:"
+            echo
+            scripts/changelog-section.sh "$version"
+          } > "$RUNNER_TEMP/body.md"
+          url=$(gh pr create --base main --head "$branch" --title "Release v$version" \
+            --body-file "$RUNNER_TEMP/body.md")
+          # Required checks for the PR; a workflow-opened PR doesn't start them.
+          gh workflow run ci.yaml --ref "$branch"
+          gh workflow run lint.yaml --ref "$branch"
+          echo "::notice::Opened $url; merge it once CI and Lint pass"
+
+  tag:
+    name: Tag release
+    if: >-
+      github.event_name == 'pull_request' && github.event.pull_request.merged
+      && startsWith(github.event.pull_request.head.ref, 'release/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+      - id: tag
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          tag="${HEAD_REF#release/}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$tag" -m "$tag"
+          git push origin "$tag"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
   release:
     name: GitHub Release
-    needs: prepare
-    # Runs after prepare, or on its own when prepare is skipped (tag push).
-    if: ${{ !cancelled() && (needs.prepare.result == 'success' || needs.prepare.result == 'skipped') }}
+    needs: tag
+    # After the tag job, or on its own for a tag pushed by hand.
+    if: >-
+      !cancelled() && (needs.tag.result == 'success'
+      || (needs.tag.result == 'skipped' && github.event_name == 'push'))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: write
     env:
-      TAG: ${{ needs.prepare.outputs.tag || github.ref_name }}
+      TAG: ${{ needs.tag.outputs.tag || github.ref_name }}
     outputs:
       tag: ${{ env.TAG }}
       firmware: ${{ steps.check.outputs.firmware }}

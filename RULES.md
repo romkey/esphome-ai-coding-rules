@@ -21,8 +21,9 @@ Canonical URL: https://github.com/romkey/esphome-ai-coding-rules/blob/main/RULES
   actions, tools, ESPHome and esphome-lib (see §8).
 - **When first applying these rules to a repo**, new or existing, ask the
   owner which license to use (§11) before adding or changing `LICENSE`.
-- Small, focused commits with messages that say why. Don't push, tag or
-  release without being asked.
+- Small, focused commits with messages that say why. `main` is protected:
+  work on a branch and open a pull request; never push to `main`. Don't
+  push, merge, tag or release without being asked.
 
 ## 1. Repository layout
 
@@ -36,10 +37,11 @@ tests/             optional: pytest unit tests for component logic
 datasheets/        manufacturer datasheets, each with a -license.txt (§5)
 docs/              configuration.md, overview.md
 scripts/           list-configs.sh, changelog-section.sh, bump-version.sh,
-                   collect-firmware.sh, check-datasheets.sh
+                   collect-firmware.sh, check-datasheets.sh, setup-github.sh
 .github/           workflows/ci.yaml, lint.yaml, release.yaml
 compose.yaml  renovate.json  .pre-commit-config.yaml  .yamllint.yaml
-.gitignore  .clang-format  README.md  CHANGELOG.md  LICENSE  AGENTS.md
+.gitignore  .clang-format  README.md  CHANGELOG.md  LICENSE  SECURITY.md
+AGENTS.md
 ```
 
 - `packages/` holds the interesting logic. A package never names a board,
@@ -172,19 +174,38 @@ Versions on 2026-10-11, for sanity checking only: `actions/checkout@v7`,
 `actions/cache@v6`, `actions/upload-artifact@v7`,
 `actions/download-artifact@v8`, `astral-sh/setup-uv@v10.3.0`.
 
-**lint.yaml**: runs pre-commit on all files.
+**Protected main.** Every change reaches `main` through a pull request,
+squash-merged, and only when the required checks **CI passed** and
+**Lint** pass on an up-to-date branch. `scripts/setup-github.sh` applies
+this as a ruleset, plus secret scanning with push protection, Dependabot
+alerts, private vulnerability reporting, CodeQL default setup, read-only
+workflow tokens and branch deletion on merge. Run it once when the GitHub
+repo is created (re-running is safe). Keep the required checks reporting:
+
+- Never use `paths`/`paths-ignore` on a workflow that provides a required
+  check; a workflow that doesn't run blocks the PR forever. Skip expensive
+  jobs inside it instead.
+- Required check names must be stable, so matrix jobs feed one summary job
+  (`CI passed`) instead of being required themselves.
+- PRs opened by a workflow's `GITHUB_TOKEN` don't trigger other workflows;
+  such a workflow must start the required ones itself
+  (`gh workflow run ... --ref <branch>`).
+
+**lint.yaml**: runs pre-commit on all files (job **Lint**).
 
 **ci.yaml**: finds configs with `scripts/list-configs.sh`, then a matrix
-job per config runs `esphome config` and `esphome compile`. The weekly
-scheduled run also builds against ESPHome beta, allowed to fail, as an early
-warning. Runs `tests/` with pytest if present.
+job per config runs `esphome config` and `esphome compile`, skipped when a
+change touches only docs. The weekly scheduled run (or a manual run with
+**beta** ticked) also builds against ESPHome beta; beta failures are
+warnings, not failures. Runs `tests/` with pytest if present. Ends with
+**CI passed**.
 
-**release.yaml**: runs from the Actions tab (**Run workflow**) with a
+**release.yaml**: run it from the Actions tab (**Run workflow**) with a
 `bump` choice of `patch` (default), `minor` or `major`: minor resets patch
-to 0, major resets minor and patch. It checks CI passed on `main`, runs
-`scripts/bump-version.sh`, commits `Release vX.Y.Z`, tags and pushes, then
-creates the GitHub Release (§9). Pushing a `vX.Y.Z` tag by hand also
-works and skips the bump.
+to 0, major resets minor and patch. It checks CI passed, runs
+`scripts/bump-version.sh` on a `release/vX.Y.Z` branch and opens a
+"Release vX.Y.Z" PR. Merging that PR tags the merge commit and creates the
+GitHub Release (§9). Pushing a `vX.Y.Z` tag by hand also works.
 
 **Speed. Cache everything that can be cached:**
 
@@ -210,10 +231,11 @@ Full explanation: [docs/releasing.md](docs/releasing.md).
   required bus id; raising `min_version`. Minor: new packages, options,
   boards. Patch: fixes. Before 1.0.0, breaking changes bump the minor.
 - `main` is always releasable. To release, run the Release workflow from
-  the Actions tab and pick the bump. Locally, `scripts/bump-version.sh
-  <patch|minor|major>` does the same edits (moves `## [Unreleased]` entries
-  under `## [X.Y.Z] - YYYY-MM-DD`, sets every `project_version`); then
-  commit `Release vX.Y.Z`, add an annotated tag `vX.Y.Z`, and push both.
+  the Actions tab, pick the bump, then merge the release PR it opens.
+  `scripts/bump-version.sh <patch|minor|major>` makes the edits (moves
+  `## [Unreleased]` entries under `## [X.Y.Z] - YYYY-MM-DD`, sets every
+  `project_version`); a human can run it on a branch and open the PR
+  themselves.
 - `release.yaml` refuses to publish if the changelog section is missing or a
   `project_version` doesn't match, then creates the GitHub Release with that
   changelog section as notes.
@@ -295,4 +317,5 @@ follow these rules, plus anything project-specific.
   for C++ or framework changes).
 - `docker compose run --rm lint` passes.
 - README, docs, and CHANGELOG reflect the change.
+- Changes are on a branch with a PR open, not on `main`.
 - You've told the human what you did not test.

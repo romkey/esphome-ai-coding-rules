@@ -28,7 +28,7 @@ when starting a project. `/esphome-rules:new` does all of this for you.
 | `scripts/collect-firmware.sh` | Gathers firmware images + web installer manifest | Nothing |
 | `.github/workflows/ci.yaml` | Builds every config; weekly beta build; unit tests | Nothing |
 | `.github/workflows/lint.yaml` | Runs pre-commit | Nothing |
-| `.github/workflows/release.yaml` | Run from the Actions tab (patch/minor/major) or on a tag; GitHub Release; firmware if `firmware/` exists | Nothing |
+| `.github/workflows/release.yaml` | Actions-tab button (patch/minor/major) opens a release PR; merging it tags and publishes; firmware if `firmware/` exists | Nothing |
 | `.pre-commit-config.yaml` | yamllint, actionlint, clang-format, ruff, hygiene | Nothing |
 | `renovate.json` | Keeps actions, hooks, images and `github://` tags current | Nothing |
 | `.yamllint.yaml` | yamllint rules relaxed for ESPHome | Nothing |
@@ -38,10 +38,17 @@ when starting a project. `/esphome-rules:new` does all of this for you.
 | `LICENSE` | MIT | Replace if the owner picks another license |
 | `datasheets/README.md` | Datasheet + `-license.txt` convention and template | Add datasheets, or delete the directory |
 | `scripts/check-datasheets.sh` | pre-commit check that every datasheet has its license file | Nothing |
+| `scripts/setup-github.sh` | Protects `main` and enables security features | Nothing; run once |
+| `SECURITY.md` | How to report vulnerabilities privately | Nothing |
 | `optional/firmware-publishing/` | Firmware + web installer for apps | Copy `firmware/` and `web/` to the root if wanted, then delete `optional/` |
 
 ## One-time GitHub setup
 
+- Run `scripts/setup-github.sh` (as a repo admin) right after the first
+  push. It protects `main` (PRs only, squash merge, "CI passed" and "Lint"
+  required), enables secret scanning with push protection, Dependabot
+  alerts, private vulnerability reporting and CodeQL, and makes workflow
+  tokens read-only. Re-running is safe.
 - Install the [Renovate GitHub App](https://github.com/apps/renovate) on the
   repo. Without it `renovate.json` does nothing.
 - Optional: set a repository variable `ESPHOME_VERSION` to pin CI to one

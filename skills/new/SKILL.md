@@ -38,5 +38,9 @@ Arguments: `$ARGUMENTS` (repo name, then `library` or `app`; both optional).
    `cp examples/secrets.yaml.example examples/secrets.yaml` and run
    `docker compose run --rm validate` and `docker compose run --rm lint`.
    Fix failures.
+   If the human asks you to create the GitHub repo: create it, push the
+   initial commit to `main` (the one commit allowed before protection),
+   then run `scripts/setup-github.sh` to protect `main` and enable the
+   security features. All later changes go through PRs.
 10. Report what you created, what is still TODO, and what you didn't test.
    Don't create a GitHub repo, commit, or push unless asked.

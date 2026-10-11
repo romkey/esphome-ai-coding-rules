@@ -21,6 +21,7 @@ releases projects that follow them.
 | [templates/](templates/) | A buildable example project: packages, ESP32/C3/S3 examples, Docker, CI, release workflow, pre-commit, Renovate, docs skeletons |
 | [templates/optional/firmware-publishing/](templates/optional/firmware-publishing/) | Add-on for apps: firmware on every release plus a browser installer |
 | [skills/](skills/), [.claude-plugin/](.claude-plugin/) | The `esphome-rules` Claude Code plugin |
+| [SECURITY.md](SECURITY.md) | How to report a vulnerability |
 | [docs/](docs/) | [Release strategy](docs/releasing.md), [Claude Code usage](docs/claude-code.md), [configuration guide](docs/configuration.md), [overview](docs/overview.md) |
 
 ## What the rules cover
@@ -74,7 +75,9 @@ docker compose -f templates/compose.yaml run --rm build
 claude plugin validate .
 ```
 
-`.github/workflows/ci.yaml` is generated from the template's: edit
+`main` is protected: changes go through pull requests, which merge once
+**CI passed** and **Lint** pass. `.github/workflows/ci.yaml` is generated
+from the template's: edit
 `templates/.github/workflows/ci.yaml` and run `scripts/sync-ci.py`.
 
 ## License

@@ -1,12 +1,18 @@
 name: CI
 
+# Always runs, so the required "CI passed" check always reports (a
+# path-filtered workflow that doesn't run blocks the PR forever). Docs-only
+# changes skip just the firmware builds.
 on:
   push:
     branches: [main]
-    paths-ignore: ["**.md", "docs/**", "LICENSE"]
   pull_request:
-    paths-ignore: ["**.md", "docs/**", "LICENSE"]
   workflow_dispatch:
+    inputs:
+      beta:
+        description: "Also build against ESPHome beta"
+        type: boolean
+        default: false
   schedule:
     # Weekly: catches stable releases that break the build, and builds
     # against ESPHome beta as an early warning.
@@ -34,10 +40,23 @@ jobs:
       channels: ${{ steps.find.outputs.channels }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0  # to diff against the base
       - id: find
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          BETA: ${{ github.event_name == 'schedule' || inputs.beta }}
         run: |
-          echo "list=$(scripts/list-configs.sh --json)" >> "$GITHUB_OUTPUT"
-          if [ "$GITHUB_EVENT_NAME" = schedule ] || [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+          list=$(scripts/list-configs.sh --json)
+          # Skip firmware builds when only docs, datasheets or the license
+          # changed. Scheduled and manual runs always build.
+          if [ -n "$BASE" ] && [ "$BASE" != 0000000000000000000000000000000000000000 ] \
+            && ! git diff --name-only "$BASE" HEAD | grep -qvE '(\.md$|^docs/|^datasheets/|^LICENSE$)'; then
+            echo "::notice::Only docs changed; skipping firmware builds"
+            list='[]'
+          fi
+          echo "list=$list" >> "$GITHUB_OUTPUT"
+          if [ "$BETA" = true ]; then
             echo 'channels=["stable","beta"]' >> "$GITHUB_OUTPUT"
           else
             echo 'channels=["stable"]' >> "$GITHUB_OUTPUT"
@@ -46,10 +65,9 @@ jobs:
   build:
     name: ${{ matrix.config }} (${{ matrix.channel }})
     needs: configs
+    if: needs.configs.outputs.list != '[]'
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    # A beta failure is an early warning, not a broken build.
-    continue-on-error: ${{ matrix.channel == 'beta' }}
     strategy:
       fail-fast: false
       matrix:
@@ -113,10 +131,17 @@ jobs:
             build-${{ matrix.config }}-${{ steps.esphome.outputs.version }}-
             build-${{ matrix.config }}-
 
+      # A beta failure is an early warning, not a broken build: those steps
+      # may fail without failing the job, and a warning says so below.
       - name: esphome config
+        id: config
+        continue-on-error: ${{ matrix.channel == 'beta' }}
         run: esphome config "${{ matrix.config }}"
 
       - name: esphome compile
+        id: compile
+        if: steps.config.outcome == 'success'
+        continue-on-error: ${{ matrix.channel == 'beta' }}
         # The PlatformIO registry is occasionally flaky; retry before failing.
         run: |
           for attempt in 1 2 3; do
@@ -125,6 +150,10 @@ jobs:
             sleep 15
           done
           exit 1
+
+      - name: Warn about beta failures
+        if: matrix.channel == 'beta' && (steps.config.outcome == 'failure' || steps.compile.outcome == 'failure')
+        run: echo "::warning::${{ matrix.config }} fails to build with ESPHome ${{ steps.esphome.outputs.version }}"
 
       - name: ccache stats
         if: always()
@@ -151,3 +180,22 @@ jobs:
           else
             uvx pytest@9.1.1 tests
           fi
+
+  # The one required status check. Matrix job names change with the config
+  # list, so branch protection requires this instead.
+  passed:
+    name: CI passed
+    if: always()
+    needs: [configs, build, tests]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          for result in $RESULTS; do
+            case "$result" in
+              success | skipped) ;;
+              *) echo "::error::A CI job finished with '$result'"; exit 1 ;;
+            esac
+          done
