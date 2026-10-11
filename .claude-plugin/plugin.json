@@ -1,0 +1,13 @@
+{
+  "name": "esphome-rules",
+  "version": "0.1.0",
+  "description": "romkey's rules for AI-written ESPHome projects: scaffold, audit and release projects that follow them.",
+  "author": {
+    "name": "John Romkey",
+    "url": "https://github.com/romkey"
+  },
+  "homepage": "https://github.com/romkey/esphome-ai-coding-rules",
+  "repository": "https://github.com/romkey/esphome-ai-coding-rules",
+  "license": "MIT",
+  "keywords": ["esphome", "home-assistant", "esp32", "rules"]
+}

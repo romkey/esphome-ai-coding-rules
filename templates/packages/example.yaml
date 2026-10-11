@@ -1,0 +1,35 @@
+# Example sensor package: the chip's internal temperature.
+#
+# Replace this with the project's real logic. It shows the conventions every
+# package follows: board-agnostic, everything overridable via substitutions
+# prefixed with the package name, and Home Assistant metadata on every sensor.
+#
+# Requires: nothing.
+#
+# Substitutions:
+#   example_name             entity name (default "Chip Temperature")
+#   example_id               sensor id, change if included twice
+#   example_update_interval  how often to sample (default 60s)
+#   example_entity_category  "" for the main card, or "diagnostic"
+
+substitutions:
+  example_name: "Chip Temperature"
+  example_id: "example_chip_temperature"
+  example_update_interval: "60s"
+  example_entity_category: "diagnostic"
+
+sensor:
+  - platform: internal_temperature
+    name: "${example_name}"
+    id: ${example_id}
+    update_interval: ${example_update_interval}
+    entity_category: "${example_entity_category}"
+    device_class: temperature
+    state_class: measurement
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+    filters:
+      # Smooth sampling noise; publish once per 5 samples.
+      - sliding_window_moving_average:
+          window_size: 5
+          send_every: 5

@@ -1,0 +1,19 @@
+# Example: the example packages on an ESP32-C3 DevKitM-1 (RISC-V).
+#
+# Board and pin choices live here, never in packages/.
+
+substitutions:
+  name: example-esp32-c3
+  friendly_name: Example ESP32-C3
+  # External LED + resistor. GPIO4 is free and not a strapping pin on this chip.
+  status_led_pin: GPIO4
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+
+packages:
+  base: !include common/base.yaml
+  example: !include ../packages/example.yaml
+  status_led: !include ../packages/status-led.yaml

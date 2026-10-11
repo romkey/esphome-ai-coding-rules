@@ -1,0 +1,59 @@
+# Published firmware for an ESP32 DevKit. Contains no secrets; see
+# optional/firmware-publishing/README.md in esphome-ai-coding-rules.
+
+substitutions:
+  # Lowercase letters, digits and hyphens; usually the repo name.
+  name: example-device
+  friendly_name: REPO
+  # Must match the release tag without the "v"; the release workflow checks.
+  project_version: "0.1.0"
+  status_led_pin: GPIO4
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  # Unique hostnames when several devices run the same image.
+  name_add_mac_suffix: true
+  project:
+    name: romkey.REPO
+    version: ${project_version}
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+packages:
+  example: !include ../packages/example.yaml
+  status_led: !include ../packages/status-led.yaml
+  esp32: github://romkey/esphome-lib/lib/esp32.yml@v0.2.0
+  wifi_diagnostics: github://romkey/esphome-lib/lib/wifi-diagnostics.yml@v0.2.0
+  restart: github://romkey/esphome-lib/lib/restart.yml@v0.2.0
+
+logger:
+
+# The key is provisioned at runtime when the device is adopted.
+api:
+  encryption:
+
+ota:
+  - platform: esphome
+
+# Lets ESPHome/Home Assistant adopt the device and track this config.
+dashboard_import:
+  package_import_url: github://romkey/REPO/firmware/esp32.yaml@main
+  import_full_config: false
+
+# No credentials: Improv over USB (the web installer) or the fallback
+# hotspot's captive portal sets up Wi-Fi after flashing.
+wifi:
+  ap:
+
+captive_portal:
+
+improv_serial:
+
+button:
+  - platform: safe_mode
+    name: "Safe Mode Boot"
+    entity_category: config

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "romkey",
+  "owner": {
+    "name": "John Romkey",
+    "url": "https://github.com/romkey"
+  },
+  "description": "romkey's Claude Code plugins",
+  "plugins": [
+    {
+      "name": "esphome-rules",
+      "source": "./",
+      "description": "Scaffold, audit and release ESPHome projects that follow romkey's ESPHome AI coding rules.",
+      "category": "development"
+    }
+  ]
+}

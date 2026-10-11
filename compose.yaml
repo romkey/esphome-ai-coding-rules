@@ -1,0 +1,27 @@
+# Lint this repo without installing anything:
+#
+#   docker compose run --rm lint
+#
+# To build and validate the templates, use their own compose file:
+#
+#   cp templates/examples/secrets.yaml.example templates/examples/secrets.yaml
+#   docker compose -f templates/compose.yaml run --rm build
+
+services:
+  # Runs .pre-commit-config.yaml: yamllint, actionlint, clang-format, ruff...
+  lint:
+    build:
+      dockerfile_inline: |
+        FROM ghcr.io/astral-sh/uv:0.13.0-python3.13-trixie-slim
+        RUN apt-get update \
+         && apt-get install -y --no-install-recommends git \
+         && rm -rf /var/lib/apt/lists/* \
+         && git config --system --add safe.directory '*'
+    volumes:
+      - .:/project
+      - lint-cache:/root/.cache
+    working_dir: /project
+    command: uvx pre-commit@4.6.2 run --all-files --show-diff-on-failure
+
+volumes:
+  lint-cache:
