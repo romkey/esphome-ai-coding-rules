@@ -192,6 +192,9 @@ jobs:
   # list, so branch protection requires this instead.
   passed:
     name: CI passed
+    defaults:
+      run:
+        working-directory: .
     if: always()
     needs: [configs, build, tests]
     runs-on: ubuntu-latest

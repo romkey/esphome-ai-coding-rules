@@ -43,6 +43,13 @@ def generate() -> str:
     text = text.replace(
         "cache-dependency-glob: tests/", "cache-dependency-glob: templates/tests/"
     )
+    # The summary job doesn't check out the repo, so templates/ doesn't exist
+    # there; run it from the workspace root.
+    text = text.replace(
+        "    name: CI passed\n",
+        "    name: CI passed\n    defaults:\n      run:\n        working-directory: .\n",
+        1,
+    )
     return HEADER + text
 
 
