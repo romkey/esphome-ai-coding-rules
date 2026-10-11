@@ -13,6 +13,19 @@ All notable changes to this project are documented here. The format follows
   License sections say datasheets aren't covered by the repo's license.
 - On first use, ask the owner whether to use MIT or another license, and
   use the chosen license's official text instead of MIT.
+- Protected `main`: changes only through squash-merged PRs with "CI passed"
+  and "Lint" green. `scripts/setup-github.sh` applies the ruleset plus
+  secret scanning with push protection, Dependabot alerts, private
+  vulnerability reporting, CodeQL and read-only workflow tokens.
+- SECURITY.md.
+
+### Changed
+
+- The Release button opens a release PR instead of pushing to `main`;
+  merging it tags and publishes.
+- CI always runs so its required check reports, skips firmware builds for
+  docs-only changes, and ends with a stable "CI passed" job. Beta failures
+  are warnings. A manual CI run can opt into the beta build.
 
 ## [0.2.0] - 2026-10-11
 

@@ -15,7 +15,9 @@ concurrency:
 
 jobs:
   pre-commit:
-    name: pre-commit
+    # Required status check for main; don't rename without updating the
+    # ruleset in scripts/setup-github.sh.
+    name: Lint
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
