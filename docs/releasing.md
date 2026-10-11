@@ -48,18 +48,37 @@ branch from its tag then.
 
 ## Cutting a release
 
-With the Claude Code plugin: `/esphome-rules:release`. It does the steps
-below and asks before pushing. By hand:
+**From GitHub (easiest):** Actions tab → **Release** → **Run workflow**,
+choose the bump and run. Patch is the default; minor resets patch to 0;
+major resets minor and patch to 0 (1.4.2 → 1.4.3, 1.5.0 or 2.0.0). The
+workflow:
+
+1. refuses to run from anything but `main`, or if the latest CI run on
+   `main` didn't pass;
+2. runs `scripts/bump-version.sh`, which finds the latest `vX.Y.Z` tag
+   (none yet means 0.0.0), computes the next version, refuses if
+   `## [Unreleased]` is empty, moves those entries under the new version
+   with today's date, and sets every `project_version`;
+3. commits `Release vX.Y.Z` as github-actions[bot], tags, pushes to `main`;
+4. carries on with the release steps below.
+
+If `main` has branch protection that blocks direct pushes, allow
+github-actions to bypass it, or release by hand.
+
+**With Claude Code:** `/esphome-rules:release` proposes the bump from the
+Unreleased entries, then either runs the workflow for you or does the steps
+locally, and asks before pushing.
+
+**By hand:**
 
 1. Make sure `main` is clean, current and green.
 2. Pick the version from the Unreleased entries using the table above.
-3. In CHANGELOG.md, rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD`
-   and add a fresh empty `## [Unreleased]` above it.
-4. Set every `project_version: "X.Y.Z"` (examples/common/base.yaml,
-   firmware/) and any pinned `@vX.Y.Z` self-references in README/docs.
-5. Check: `scripts/changelog-section.sh X.Y.Z` and
+3. `scripts/bump-version.sh <patch|minor|major>` updates CHANGELOG.md and
+   every `project_version` and prints the new version. Update any pinned
+   `@vX.Y.Z` self-references in README/docs yourself.
+4. Check: `scripts/changelog-section.sh X.Y.Z` and
    `docker compose run --rm validate`.
-6. Commit and tag:
+5. Commit and tag:
 
    ```bash
    git commit -am "Release vX.Y.Z"
@@ -67,9 +86,9 @@ below and asks before pushing. By hand:
    git push origin main vX.Y.Z
    ```
 
-## What the tag triggers
+## What the release workflow does
 
-`.github/workflows/release.yaml`:
+`.github/workflows/release.yaml`, after the bump (or on a tag you pushed):
 
 1. Checks the CHANGELOG section exists and every `project_version` equals
    the tag. Fails loudly otherwise; delete the tag, fix, re-tag.

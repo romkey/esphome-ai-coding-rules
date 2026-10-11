@@ -6,6 +6,18 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Release workflow can be run from the Actions tab with a patch, minor or
+  major bump (default patch); it updates CHANGELOG.md and `project_version`,
+  commits, tags and publishes. New `scripts/bump-version.sh` does the edits
+  and is shared by the workflow, the release skill and humans.
+
+### Fixed
+
+- Firmware publishing: release jobs no longer get skipped on tag pushes,
+  and the kit README explains allowing release tags to deploy to Pages.
+
 ## [0.1.0] - 2026-10-11
 
 ### Added

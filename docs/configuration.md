@@ -24,10 +24,11 @@ when starting a project. `/esphome-rules:new` does all of this for you.
 | `compose.yaml` | `validate`, `build`, `lint`, `dashboard`, `esphome` | Nothing |
 | `scripts/list-configs.sh` | Lists buildable configs for CI, release and compose | Nothing |
 | `scripts/changelog-section.sh` | Prints a version's changelog notes; release check | Nothing |
+| `scripts/bump-version.sh` | Next version from the latest tag; updates CHANGELOG and `project_version` | Nothing |
 | `scripts/collect-firmware.sh` | Gathers firmware images + web installer manifest | Nothing |
 | `.github/workflows/ci.yaml` | Builds every config; weekly beta build; unit tests | Nothing |
 | `.github/workflows/lint.yaml` | Runs pre-commit | Nothing |
-| `.github/workflows/release.yaml` | GitHub Release on tag; firmware if `firmware/` exists | Nothing |
+| `.github/workflows/release.yaml` | Run from the Actions tab (patch/minor/major) or on a tag; GitHub Release; firmware if `firmware/` exists | Nothing |
 | `.pre-commit-config.yaml` | yamllint, actionlint, clang-format, ruff, hygiene | Nothing |
 | `renovate.json` | Keeps actions, hooks, images and `github://` tags current | Nothing |
 | `.yamllint.yaml` | yamllint rules relaxed for ESPHome | Nothing |

@@ -8,12 +8,20 @@ on GitHub Pages, so people can flash from a browser without ESPHome.
 
 1. Copy `firmware/` and `web/` from here to the repo root.
 2. Make one `firmware/<board>.yaml` per supported board. Replace `REPO`.
-3. Enable Pages with GitHub Actions as the source:
-   `gh api -X POST repos/romkey/REPO/pages -f build_type=workflow`
+3. Enable Pages with GitHub Actions as the source, and let release tags
+   deploy to it (by default only `main` may):
+
+   ```bash
+   gh api -X POST repos/romkey/REPO/pages -f build_type=workflow
+   ```
+
+   ```bash
+   gh api -X POST repos/romkey/REPO/environments/github-pages/deployment-branch-policies -f name='v*' -f type=tag
+   ```
 4. Add the installer link and a "Flash from your browser" section to the README.
 
 `.github/workflows/release.yaml` notices `firmware/` and builds, attaches and
-publishes it on every tag. CI already builds `firmware/` on every push.
+publishes it on every release. CI already builds `firmware/` on every push.
 
 ## Why separate configs instead of the examples
 

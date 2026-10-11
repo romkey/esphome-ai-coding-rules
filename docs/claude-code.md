@@ -28,7 +28,7 @@ claude plugin install esphome-rules@romkey
 |---------|--------------|
 | `/esphome-rules:new [name] [library\|app]` | Scaffolds a project from `templates/`, asks what it does and what hardware it uses, fills in placeholders, looks up current versions, validates and lints. Doesn't create a GitHub repo or push unless you ask. |
 | `/esphome-rules:check [fix]` | Audits the current repo against RULES.md and reports findings by section. With `fix`, applies them and re-runs validate and lint. |
-| `/esphome-rules:release [major\|minor\|patch\|X.Y.Z]` | Prepares a release per [releasing.md](releasing.md): checks CI, proposes the version, updates CHANGELOG and `project_version`, commits and tags. Pushes only after you confirm. |
+| `/esphome-rules:release [patch\|minor\|major]` | Releases per [releasing.md](releasing.md): checks CI, proposes the bump from the changelog, then runs the Release workflow (or bumps, commits and tags locally, pushing only after you confirm). |
 
 There is also a **rules** skill that Claude loads by itself when it works on
 ESPHome YAML, components or CI in a repo that follows these rules, so you

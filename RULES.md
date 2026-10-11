@@ -32,7 +32,8 @@ examples/common/   config shared by examples (not built on its own)
 firmware/          optional, apps only: published, secret-free configs
 tests/             optional: pytest unit tests for component logic
 docs/              configuration.md, overview.md
-scripts/           list-configs.sh, changelog-section.sh, collect-firmware.sh
+scripts/           list-configs.sh, changelog-section.sh, bump-version.sh,
+                   collect-firmware.sh
 .github/           workflows/ci.yaml, lint.yaml, release.yaml
 compose.yaml  renovate.json  .pre-commit-config.yaml  .yamllint.yaml
 .gitignore  .clang-format  README.md  CHANGELOG.md  LICENSE  AGENTS.md
@@ -164,7 +165,12 @@ job per config runs `esphome config` and `esphome compile`. The weekly
 scheduled run also builds against ESPHome beta, allowed to fail, as an early
 warning. Runs `tests/` with pytest if present.
 
-**release.yaml**: on a `vX.Y.Z` tag, creates the GitHub Release (§9).
+**release.yaml**: runs from the Actions tab (**Run workflow**) with a
+`bump` choice of `patch` (default), `minor` or `major`: minor resets patch
+to 0, major resets minor and patch. It checks CI passed on `main`, runs
+`scripts/bump-version.sh`, commits `Release vX.Y.Z`, tags and pushes, then
+creates the GitHub Release (§9). Pushing a `vX.Y.Z` tag by hand also
+works and skips the bump.
 
 **Speed. Cache everything that can be cached:**
 
@@ -189,9 +195,11 @@ Full explanation: [docs/releasing.md](docs/releasing.md).
   (major): removing or renaming a package, substitution, id, entity name or
   required bus id; raising `min_version`. Minor: new packages, options,
   boards. Patch: fixes. Before 1.0.0, breaking changes bump the minor.
-- `main` is always releasable. To release: move `## [Unreleased]` entries
-  under `## [X.Y.Z] - YYYY-MM-DD`, set `project_version`, commit
-  `Release vX.Y.Z`, then an annotated tag `vX.Y.Z`, push both.
+- `main` is always releasable. To release, run the Release workflow from
+  the Actions tab and pick the bump. Locally, `scripts/bump-version.sh
+  <patch|minor|major>` does the same edits (moves `## [Unreleased]` entries
+  under `## [X.Y.Z] - YYYY-MM-DD`, sets every `project_version`); then
+  commit `Release vX.Y.Z`, add an annotated tag `vX.Y.Z`, and push both.
 - `release.yaml` refuses to publish if the changelog section is missing or a
   `project_version` doesn't match, then creates the GitHub Release with that
   changelog section as notes.

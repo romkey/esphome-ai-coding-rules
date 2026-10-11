@@ -1,9 +1,20 @@
 name: Release
 
-# Push a tag vX.Y.Z (see docs/releasing.md in esphome-ai-coding-rules).
+# Two ways to release (see docs/releasing.md in esphome-ai-coding-rules):
+# - Actions tab -> Release -> Run workflow, choosing patch, minor or major.
+#   The prepare job bumps the version, commits, tags and pushes, then the
+#   release jobs below run on the new tag.
+# - Push a vX.Y.Z tag yourself; prepare is skipped.
 on:
   push:
     tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version to bump (minor resets patch; major resets both)"
+        type: choice
+        options: [patch, minor, major]
+        default: patch
 
 permissions:
   contents: read
@@ -16,21 +27,77 @@ env:
   ESPHOME_VERSION: ${{ vars.ESPHOME_VERSION }}
 
 jobs:
-  release:
-    name: GitHub Release
+  prepare:
+    name: Bump version
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: write
+      actions: read
     outputs:
+      tag: ${{ steps.bump.outputs.tag }}
+    steps:
+      - name: Only release from main
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::Run the release from main, not $GITHUB_REF_NAME"
+          exit 1
+
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0  # all tags, to find the latest version
+
+      - name: Check CI passed for this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          state() { gh run list --workflow ci.yaml --limit 1 --json status,conclusion \
+            --jq '.[] | "\(.status) \(.conclusion)"' "$@"; }
+          run=$(state --commit "$GITHUB_SHA")
+          # Docs-only commits skip CI; fall back to the latest run on main.
+          [ -n "$run" ] || run=$(state --branch main --status completed)
+          if [ "$run" != "completed success" ]; then
+            echo "::error::CI for this commit is '${run:-missing}'; wait for it to pass"
+            exit 1
+          fi
+
+      - name: Bump, commit, tag and push
+        id: bump
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: |
+          version=$(scripts/bump-version.sh "$BUMP")
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Release v$version"
+          git tag -a "v$version" -m "v$version"
+          git push origin HEAD:main "v$version"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+
+  release:
+    name: GitHub Release
+    needs: prepare
+    # Runs after prepare, or on its own when prepare is skipped (tag push).
+    if: ${{ !cancelled() && (needs.prepare.result == 'success' || needs.prepare.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ needs.prepare.outputs.tag || github.ref_name }}
+    outputs:
+      tag: ${{ env.TAG }}
       firmware: ${{ steps.check.outputs.firmware }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
 
       - name: Check changelog and project version
         id: check
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          version="${TAG#v}"
           scripts/changelog-section.sh "$version" > "$RUNNER_TEMP/notes.md"
           # Every project_version must match the tag.
           wrong=$(grep -rhs --include='*.yaml' --include='*.yml' \
@@ -47,8 +114,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           prerelease=""
-          case "$GITHUB_REF_NAME" in *-*) prerelease="--prerelease" ;; esac
-          gh release create "$GITHUB_REF_NAME" --verify-tag --title "$GITHUB_REF_NAME" \
+          case "$TAG" in *-*) prerelease="--prerelease" ;; esac
+          gh release create "$TAG" --verify-tag --title "$TAG" \
             --notes-file "$RUNNER_TEMP/notes.md" $prerelease
 
   # Everything below runs only for projects with a firmware/ directory
@@ -56,14 +123,20 @@ jobs:
   firmware:
     name: Firmware ${{ matrix.config }}
     needs: release
-    if: needs.release.outputs.firmware != '[]'
+    # Explicit status checks: prepare is skipped on tag pushes, and an
+    # implicit success() would skip this job too.
+    if: ${{ !cancelled() && needs.release.result == 'success' && needs.release.outputs.firmware != '[]' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:
       matrix:
         config: ${{ fromJSON(needs.release.outputs.firmware) }}
+    env:
+      TAG: ${{ needs.release.outputs.tag }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
       - uses: astral-sh/setup-uv@v10.3.0
         with:
           enable-cache: true
@@ -111,7 +184,7 @@ jobs:
           done
 
       - name: Collect images and manifest
-        run: scripts/collect-firmware.sh "${{ matrix.config }}" dist "${GITHUB_REF_NAME#v}"
+        run: scripts/collect-firmware.sh "${{ matrix.config }}" dist "${TAG#v}"
 
       - uses: actions/upload-artifact@v7
         with:
@@ -122,6 +195,7 @@ jobs:
   publish:
     name: Publish firmware
     needs: [release, firmware]
+    if: ${{ !cancelled() && needs.firmware.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -131,8 +205,12 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
+    env:
+      TAG: ${{ needs.release.outputs.tag }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
 
       - uses: actions/download-artifact@v8
         with:
@@ -143,7 +221,7 @@ jobs:
       - name: Attach images to the release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "$GITHUB_REF_NAME" dist/*.bin
+        run: gh release upload "$TAG" dist/*.bin
 
       # Web installer: web/ plus the images, manifests and an index of them.
       - name: Assemble site

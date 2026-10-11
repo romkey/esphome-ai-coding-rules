@@ -1,9 +1,20 @@
 name: Release
 
-# Push a tag vX.Y.Z; see docs/releasing.md.
+# Two ways to release (see docs/releasing.md):
+# - Actions tab -> Release -> Run workflow, choosing patch, minor or major.
+#   The prepare job bumps CHANGELOG.md and the plugin version, commits, tags
+#   and pushes, then the release job runs on the new tag.
+# - Push a vX.Y.Z tag yourself; prepare is skipped.
 on:
   push:
     tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version to bump (minor resets patch; major resets both)"
+        type: choice
+        options: [patch, minor, major]
+        default: patch
 
 permissions:
   contents: read
@@ -13,23 +24,78 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release:
-    name: GitHub Release
+  prepare:
+    name: Bump version
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: write
+      actions: read
+    outputs:
+      tag: ${{ steps.bump.outputs.tag }}
+    steps:
+      - name: Only release from main
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::Run the release from main, not $GITHUB_REF_NAME"
+          exit 1
+
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0  # all tags, to find the latest version
+
+      - name: Check CI passed for this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          state() { gh run list --workflow ci.yaml --limit 1 --json status,conclusion \
+            --jq '.[] | "\(.status) \(.conclusion)"' "$@"; }
+          run=$(state --commit "$GITHUB_SHA")
+          # Docs-only commits skip CI; fall back to the latest run on main.
+          [ -n "$run" ] || run=$(state --branch main --status completed)
+          if [ "$run" != "completed success" ]; then
+            echo "::error::CI for this commit is '${run:-missing}'; wait for it to pass"
+            exit 1
+          fi
+
+      - name: Bump, commit, tag and push
+        id: bump
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: |
+          version=$(templates/scripts/bump-version.sh "$BUMP")
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Release v$version"
+          git tag -a "v$version" -m "v$version"
+          git push origin HEAD:main "v$version"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+
+  release:
+    name: GitHub Release
+    needs: prepare
+    # Runs after prepare, or on its own when prepare is skipped (tag push).
+    if: ${{ !cancelled() && (needs.prepare.result == 'success' || needs.prepare.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ needs.prepare.outputs.tag || github.ref_name }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
 
       - name: Check changelog and plugin version
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          version="${TAG#v}"
           templates/scripts/changelog-section.sh "$version" > "$RUNNER_TEMP/notes.md"
           # The plugin version pins what Claude Code users get.
           plugin=$(jq -r .version .claude-plugin/plugin.json)
           if [ "$plugin" != "$version" ]; then
-            echo "::error::.claude-plugin/plugin.json version is $plugin, tag is $GITHUB_REF_NAME"
+            echo "::error::.claude-plugin/plugin.json version is $plugin, tag is $TAG"
             exit 1
           fi
 
@@ -38,6 +104,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           prerelease=""
-          case "$GITHUB_REF_NAME" in *-*) prerelease="--prerelease" ;; esac
-          gh release create "$GITHUB_REF_NAME" --verify-tag --title "$GITHUB_REF_NAME" \
+          case "$TAG" in *-*) prerelease="--prerelease" ;; esac
+          gh release create "$TAG" --verify-tag --title "$TAG" \
             --notes-file "$RUNNER_TEMP/notes.md" $prerelease
