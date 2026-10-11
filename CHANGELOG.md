@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-11
+
 ### Added
 
 - Secret protection. A pre-commit check (`scripts/check-secrets.py`) fails
