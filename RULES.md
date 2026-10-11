@@ -144,15 +144,18 @@ Start from [`templates/.github/`](templates/.github/) and
 **Versions.** Your training data is months old and the actions you remember
 are probably deprecated. Before writing or editing any workflow, look up the
 latest release of every action and tool you use, e.g.
-`gh api repos/actions/checkout/releases/latest --jq .tag_name`, and use
-that major version (`@v7`). Do the same for pinned tool versions (pre-commit
-hooks, pytest, the uv image, esphome-lib tags). A Node.js deprecation warning
+`gh api repos/actions/checkout/releases/latest --jq .tag_name`. Use the
+major tag (`@v7`) only if it exists
+(`gh api repos/actions/checkout/git/ref/tags/v7`); some actions, like
+`astral-sh/setup-uv`, publish only full versions (`@v10.3.0`). Do the same
+for pinned tool versions (pre-commit hooks, pytest, the uv image,
+esphome-lib tags). A Node.js deprecation warning
 in a run log means an action is out of date: fix it. Afterwards
 [Renovate](https://docs.renovatebot.com/) keeps everything current,
 including `github://` package tags, which Dependabot can't update.
 Versions on 2026-10-11, for sanity checking only: `actions/checkout@v7`,
 `actions/cache@v6`, `actions/upload-artifact@v7`,
-`actions/download-artifact@v8`, `astral-sh/setup-uv@v10`.
+`actions/download-artifact@v8`, `astral-sh/setup-uv@v10.3.0`.
 
 **lint.yaml**: runs pre-commit on all files.
 
