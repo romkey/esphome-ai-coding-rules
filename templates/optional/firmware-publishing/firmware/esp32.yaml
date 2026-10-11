@@ -44,14 +44,34 @@ dashboard_import:
   package_import_url: github://romkey/REPO/firmware/esp32.yaml@main
   import_full_config: false
 
-# No credentials: Improv over USB (the web installer) or the fallback
-# hotspot's captive portal sets up Wi-Fi after flashing.
+# No credentials. After flashing, people set up their own Wi-Fi with any of:
+# - the web installer, which asks for it over USB (Improv serial);
+# - a phone over Bluetooth: the Home Assistant app finds the device, or use
+#   https://www.improv-wifi.com in Chrome (Improv BLE);
+# - the fallback hotspot's captive portal.
+# ESPHome doesn't support ESP RainMaker; Improv is its equivalent.
 wifi:
   ap:
 
 captive_portal:
 
 improv_serial:
+
+# Needs a chip with Bluetooth (not the ESP32-S2). No authorizer button, since
+# boards differ; the provisioning window below limits the exposure. If the
+# board has a button, use it: authorizer: <binary_sensor id>.
+# ESPHome 2026.10 renames this improv_ble; switch once 2026.10 is the stable
+# release. The old name stops working in ESPHome 2027.4.0.
+esp32_improv:
+  authorizer: none
+
+# Setup window: if Wi-Fi isn't set up and the device isn't adopted by Home
+# Assistant within 30 minutes of power-on, Improv, the hotspot and adoption
+# stop accepting connections until the device is unplugged and replugged.
+# An unconfigured device otherwise stays open to anyone nearby. ESPHome warns
+# that the hotspot closes with the window; that's intended here.
+provisioning:
+  timeout: 30min
 
 button:
   - platform: safe_mode

@@ -6,6 +6,14 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Published firmware can be set up on anyone's Wi-Fi from a phone over
+  Bluetooth (Improv BLE), alongside the web installer (Improv serial) and
+  fallback hotspot, with a 30-minute setup window (`provisioning:`) that
+  closes setup on unconfigured devices. RULES.md notes ESPHome doesn't
+  support ESP RainMaker and Improv is its equivalent.
+
 ## [0.3.0] - 2026-10-11
 
 ### Added
