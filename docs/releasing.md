@@ -111,11 +111,15 @@ Optional, for applications. Copy
 and follow its README.
 
 Firmware configs are separate from examples because examples are built with
-CI's dummy secrets, and a published image must contain none. Firmware
-configs instead:
+CI's dummy secrets, and a published image must contain none and work on
+anyone's Wi-Fi. Firmware configs instead:
 
-- configure Wi-Fi after flashing: the web installer asks for it over Improv,
-  or the device opens a fallback hotspot with a captive portal;
+- configure Wi-Fi after flashing: the web installer asks for it over USB,
+  a phone can set it over Bluetooth, or the device opens a fallback hotspot
+  with a captive portal (all Improv or ESPHome built-ins; ESPHome doesn't
+  support ESP RainMaker);
+- close those setup paths if the device isn't set up within 30 minutes of
+  power-on (`provisioning:`), until it's power-cycled;
 - have the API key provisioned when Home Assistant adopts the device
   (`dashboard_import`);
 - set `name_add_mac_suffix` so several devices can share one image;

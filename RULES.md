@@ -245,8 +245,18 @@ Full explanation: [docs/releasing.md](docs/releasing.md).
   [`templates/optional/firmware-publishing/`](templates/optional/firmware-publishing/).
   Then each release attaches `.factory.bin`/`.ota.bin` images and deploys a
   browser installer (ESP Web Tools) to GitHub Pages. Firmware configs live
-  in `firmware/` and contain no secrets (Improv/captive portal for Wi-Fi,
-  API key provisioned on adoption). Never publish images built from examples.
+  in `firmware/` and contain no secrets; never publish images built from
+  examples. They must work on anyone's Wi-Fi without rebuilding:
+  - Wi-Fi set up after flashing through Improv over USB (`improv_serial:`,
+    used by the web installer), Improv over Bluetooth (`esp32_improv:`,
+    `improv_ble:` from ESPHome 2026.10; skip on chips without Bluetooth),
+    and the fallback hotspot (`wifi: ap:` + `captive_portal:`);
+  - API key provisioned when Home Assistant adopts it (`api: encryption:`
+    with no key, `dashboard_import:`);
+  - a setup window (`provisioning: timeout: 30min`) that closes those paths
+    if the device isn't set up within 30 minutes of power-on.
+  ESPHome doesn't support ESP RainMaker; Improv is its equivalent. Don't
+  use RainMaker.
 
 ## 10. Documentation
 
