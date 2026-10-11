@@ -12,6 +12,8 @@ substitutions:
 esphome:
   name: ${name}
   friendly_name: ${friendly_name}
+  comment: REPO
+  min_version: 2026.9.0
   # Unique hostnames when several devices run the same image.
   name_add_mac_suffix: true
   project:
@@ -22,6 +24,8 @@ esp32:
   board: esp32dev
   framework:
     type: esp-idf
+  # The smallest ESP32-WROOM-32E; set the published board's real size.
+  flash_size: 4MB
 
 packages:
   example: !include ../packages/example.yaml
@@ -30,7 +34,9 @@ packages:
   wifi_diagnostics: github://romkey/esphome-lib/lib/wifi-diagnostics.yml@v0.2.0
   restart: github://romkey/esphome-lib/lib/restart.yml@v0.2.0
 
+# INFO saves flash and CPU in published images; examples keep DEBUG.
 logger:
+  level: INFO
 
 # The key is provisioned at runtime when the device is adopted.
 api:
@@ -38,6 +44,17 @@ api:
 
 ota:
   - platform: esphome
+  # Lets the update entity below install new releases.
+  - platform: http_request
+
+http_request:
+
+# Home Assistant shows "update available" when a new release is published
+# and installs it. The release workflow publishes this manifest to Pages.
+update:
+  - platform: http_request
+    name: Firmware
+    source: https://romkey.github.io/REPO/firmware/example-device.manifest.json
 
 # Lets ESPHome/Home Assistant adopt the device and track this config.
 dashboard_import:
@@ -53,6 +70,8 @@ dashboard_import:
 wifi:
   ap:
 
+# Note the captive portal also accepts firmware uploads while it's open;
+# the provisioning window below limits how long that is.
 captive_portal:
 
 improv_serial:
@@ -73,7 +92,18 @@ esp32_improv:
 provisioning:
   timeout: 30min
 
+# No web_server: published images can't ship a password, and without one
+# anyone on the network could use the controls.
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+
 button:
   - platform: safe_mode
     name: "Safe Mode Boot"
+    entity_category: config
+  # Forget Wi-Fi and the Home Assistant key; setup starts over.
+  - platform: factory_reset
+    name: "Factory Reset"
     entity_category: config

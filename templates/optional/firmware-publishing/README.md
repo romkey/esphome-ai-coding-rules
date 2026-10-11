@@ -7,7 +7,8 @@ on GitHub Pages, so people can flash from a browser without ESPHome.
 ## Add it to a project
 
 1. Copy `firmware/` and `web/` from here to the repo root.
-2. Make one `firmware/<board>.yaml` per supported board. Replace `REPO`.
+2. Make one `firmware/<board>.yaml` per supported board. Replace `REPO`,
+   `example-device` (also in the `update:` source URL) and `flash_size`.
 3. Enable Pages with GitHub Actions as the source, and let release tags
    deploy to it (by default only `main` may):
 
@@ -40,7 +41,16 @@ secrets and must work on anyone's network, so firmware configs:
   isn't set up and the device isn't adopted by then, setup closes until the
   device is unplugged and replugged, so an unconfigured device isn't left
   open to anyone nearby;
-- add the MAC to the hostname so several devices can coexist.
+- add the MAC to the hostname so several devices can coexist;
+- check for updates: Home Assistant shows "update available" when a new
+  release is published and installs it (`update: platform: http_request`,
+  reading `firmware/<name>.manifest.json` on Pages, which includes the OTA
+  image and its md5);
+- log at INFO to save flash, have a factory reset button so a device can be
+  handed on, and leave out `web_server:`, which can't ship a password.
+
+The captive portal also accepts firmware uploads while it's open; the setup
+window limits how long that is.
 
 ESPHome doesn't support ESP RainMaker; Improv is its equivalent.
 

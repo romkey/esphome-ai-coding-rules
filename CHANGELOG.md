@@ -6,6 +6,25 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Examples include web server version 3 (set explicitly; ESPHome defaults
+  to 2) with digest auth from secrets and its unencrypted upload page off,
+  Home Assistant time, a factory reset button, `min_version`, and a
+  `comment`.
+- Rules for board facts: `flash_size` from the module's documentation, and
+  `logger: hardware_uart: UART0` on ESP32-C3/S3 boards whose USB goes
+  through a USB-to-UART bridge (ESPHome logs to built-in USB by default, so
+  logs and Improv serial would never reach the port).
+- Published firmware checks for updates from GitHub releases
+  (`update: platform: http_request`); release manifests now include the OTA
+  image, its md5 and the release URL. Published firmware also logs at INFO
+  and has a factory reset button.
+
+### Fixed
+
+- The ESP32-C3 and ESP32-S3 examples now log over their USB-to-UART ports.
+
 ## [0.4.0] - 2026-10-11
 
 ### Added
