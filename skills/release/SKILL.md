@@ -21,7 +21,10 @@ read it first.
    version, make that change through a normal PR first.
 5. Run the Release workflow: `gh workflow run release.yaml -f bump=<bump>`,
    watch it (`gh run watch`), and give the human the release PR's URL. It
-   starts CI and Lint on the PR; report when they pass.
+   approves the PR's CI and Lint runs; if its log has a warning that it
+   couldn't, approve them (`gh api -X POST
+   repos/{owner}/{repo}/actions/runs/<id>/approve` for each
+   `action_required` run on the branch). Report when the checks pass.
 6. Don't merge the release PR unless the human asks; merging publishes.
    After it merges, watch the Release run triggered by the merge and report
    the release URL.

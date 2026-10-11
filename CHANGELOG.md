@@ -21,8 +21,9 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
-- The Release button opens a release PR instead of pushing to `main`;
-  merging it tags and publishes.
+- The Release button opens a release PR instead of pushing to `main`, and
+  approves the PR's CI and Lint runs, which GitHub holds on PRs opened by
+  a workflow; merging it tags and publishes.
 - CI always runs so its required check reports, skips firmware builds for
   docs-only changes, and ends with a stable "CI passed" job. Beta failures
   are warnings. A manual CI run can opt into the beta build.

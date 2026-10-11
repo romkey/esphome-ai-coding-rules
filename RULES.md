@@ -187,9 +187,11 @@ repo is created (re-running is safe). Keep the required checks reporting:
   jobs inside it instead.
 - Required check names must be stable, so matrix jobs feed one summary job
   (`CI passed`) instead of being required themselves.
-- PRs opened by a workflow's `GITHUB_TOKEN` don't trigger other workflows;
-  such a workflow must start the required ones itself
-  (`gh workflow run ... --ref <branch>`).
+- GitHub holds the workflow runs of a PR opened by `GITHUB_TOKEN` as
+  `action_required`. The workflow that opened it must approve them
+  (`POST /repos/{owner}/{repo}/actions/runs/{id}/approve`); runs started
+  separately with `gh workflow run` do not satisfy the PR's required
+  checks.
 
 **lint.yaml**: runs pre-commit on all files (job **Lint**).
 
@@ -203,8 +205,8 @@ warnings, not failures. Runs `tests/` with pytest if present. Ends with
 **release.yaml**: run it from the Actions tab (**Run workflow**) with a
 `bump` choice of `patch` (default), `minor` or `major`: minor resets patch
 to 0, major resets minor and patch. It checks CI passed, runs
-`scripts/bump-version.sh` on a `release/vX.Y.Z` branch and opens a
-"Release vX.Y.Z" PR. Merging that PR tags the merge commit and creates the
+`scripts/bump-version.sh` on a `release/vX.Y.Z` branch, opens a
+"Release vX.Y.Z" PR and approves its CI and Lint runs. Merging that PR tags the merge commit and creates the
 GitHub Release (§9). Pushing a `vX.Y.Z` tag by hand also works.
 
 **Speed. Cache everything that can be cached:**
