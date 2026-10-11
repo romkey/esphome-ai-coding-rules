@@ -1,9 +1,11 @@
 # Example: the example packages on an ESP32-C3 DevKitM-1 (RISC-V).
 #
 # Board and pin choices live here, never in packages/.
+# Board: https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32c3/esp32-c3-devkitm-1/user_guide.html
 
 substitutions:
   name: example-esp32-c3
+  comment: Example device for the example packages
   friendly_name: Example ESP32-C3
   # External LED + resistor. GPIO4 is free and not a strapping pin on this chip.
   status_led_pin: GPIO4
@@ -12,6 +14,13 @@ esp32:
   board: esp32-c3-devkitm-1
   framework:
     type: esp-idf
+  flash_size: 4MB  # 4 MB flash in the module, per the board docs above
+
+# Its Micro-USB port goes through a USB-to-UART bridge to UART0, but ESPHome
+# logs to the C3's built-in USB by default; without this, logs and Improv
+# serial never reach the port.
+logger:
+  hardware_uart: UART0
 
 packages:
   base: !include common/base.yaml

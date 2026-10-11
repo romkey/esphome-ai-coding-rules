@@ -1,9 +1,11 @@
 # Example: the example packages on an ESP32-S3 DevKitC-1 (Xtensa LX7).
 #
 # Board and pin choices live here, never in packages/.
+# Board: https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-devkitc-1/user_guide_v1.1.html
 
 substitutions:
   name: example-esp32-s3
+  comment: Example device for the example packages
   friendly_name: Example ESP32-S3
   # External LED + resistor. GPIO4 is free and not a strapping pin on this chip.
   status_led_pin: GPIO4
@@ -12,6 +14,12 @@ esp32:
   board: esp32-s3-devkitc-1
   framework:
     type: esp-idf
+  flash_size: 8MB  # 8 MB flash, per the board docs above
+
+# Logs and Improv serial on the port labelled "UART" (the USB-to-UART
+# bridge). ESPHome defaults to the S3's built-in USB, the other port.
+logger:
+  hardware_uart: UART0
 
 packages:
   base: !include common/base.yaml

@@ -51,7 +51,15 @@ AGENTS.md
   own package, separate from sensing/control logic, so it can be omitted.
 - `examples/` show how to use the packages. Each is a full config that
   compiles in CI and holds all board and pin choices, with a unique
-  `esphome: name:` (build trees are keyed by it).
+  `esphome: name:` (build trees are keyed by it) and a `comment:` saying
+  what the device is.
+- Board facts come from the board's documentation, linked in a comment:
+  - `esp32: flash_size:` is the actual module's flash. If the board ships
+    with several modules, say which one the value is for.
+  - Logs and Improv serial must reach the USB port people plug into. On
+    ESP32-C3/S3 (and newer) ESPHome logs to the chip's built-in USB by
+    default; boards whose USB port goes through a USB-to-UART bridge need
+    `logger: hardware_uart: UART0`.
 - `components/<name>/` sits at the repo root so `external_components` with a
   `github://` source finds it without a `path:`.
 - Repos are either **libraries** (packages/components for other projects)
@@ -84,14 +92,22 @@ AGENTS.md
 - Shared settings go in `examples/common/base.yaml`, included by each example:
   - `esphome: project:` with `name: romkey.<repo>` and
     `version: ${project_version}`; `project_version` matches the release tag.
+  - `esphome: min_version:` set to the ESPHome release the configs were
+    tested with.
   - From [esphome-lib](https://github.com/romkey/esphome-lib), pinned to its
     latest tag: `esp32`, `wifi-diagnostics`, `restart`, and `i2c-scan` if
     the project has I2C devices (bus `id: i2c0`).
   - `logger:`, `wifi:` from secrets, encrypted `api:`, and `ota:` with a bare
     `encryption:` that reuses the api key. No OTA `password:` (deprecated).
   - Recovery: `wifi: ap:` with `!secret fallback_ap_password`,
-    `captive_portal:`, and a `safe_mode` button (`entity_category: config`).
-    Drop these only on flash-constrained devices, and say so.
+    `captive_portal:`, a `safe_mode` button and a `factory_reset` button
+    (both `entity_category: config`). Drop these only on flash-constrained
+    devices, and say so.
+  - `web_server:` with `version: 3` (ESPHome defaults to 2), `ota: false`
+    (its upload page is unencrypted; encrypted OTA covers updates), and
+    `auth:` with `type: digest` and username/password from secrets.
+  - `time: - platform: homeassistant` (add `sntp` if the device must keep
+    time without Home Assistant).
 - Never put real credentials in the repo.
 
 ## 4. Home Assistant conventions
@@ -254,7 +270,12 @@ Full explanation: [docs/releasing.md](docs/releasing.md).
   - API key provisioned when Home Assistant adopts it (`api: encryption:`
     with no key, `dashboard_import:`);
   - a setup window (`provisioning: timeout: 30min`) that closes those paths
-    if the device isn't set up within 30 minutes of power-on.
+    if the device isn't set up within 30 minutes of power-on;
+  - updates from releases: `update: - platform: http_request` reading the
+    manifest the release workflow publishes to Pages (it includes the OTA
+    image and its md5), with `ota: - platform: http_request`;
+  - `logger: level: INFO`, a `factory_reset` button, and no `web_server:`
+    (it can't ship a password).
   ESPHome doesn't support ESP RainMaker; Improv is its equivalent. Don't
   use RainMaker.
 

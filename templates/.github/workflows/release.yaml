@@ -251,7 +251,9 @@ jobs:
           done
 
       - name: Collect images and manifest
-        run: scripts/collect-firmware.sh "${{ matrix.config }}" dist "${TAG#v}"
+        run: |
+          scripts/collect-firmware.sh "${{ matrix.config }}" dist "${TAG#v}" \
+            "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/$TAG"
 
       - uses: actions/upload-artifact@v7
         with:

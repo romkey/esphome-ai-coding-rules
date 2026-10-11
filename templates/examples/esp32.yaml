@@ -1,9 +1,11 @@
 # Example: the example packages on an ESP32 DevKit (Xtensa, original ESP32).
 #
 # Board and pin choices live here, never in packages/.
+# Board: https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32/esp32-devkitc/user_guide.html
 
 substitutions:
   name: example-esp32
+  comment: Example device for the example packages
   friendly_name: Example ESP32
   # External LED + resistor. GPIO4 is free and not a strapping pin on this chip.
   status_led_pin: GPIO4
@@ -12,6 +14,9 @@ esp32:
   board: esp32dev
   framework:
     type: esp-idf
+  # The smallest ESP32-WROOM-32E (N4) and the esp32dev default; the module
+  # also comes with 8 or 16 MB. Set it to your module's size.
+  flash_size: 4MB
 
 packages:
   base: !include common/base.yaml
