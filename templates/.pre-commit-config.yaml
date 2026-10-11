@@ -27,6 +27,13 @@ repos:
     rev: v1.7.12.25
     hooks:
       - id: actionlint
+        # Bundled so workflow shell is checked locally exactly as in CI.
+        additional_dependencies: [shellcheck-py==0.11.0.1]
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+      - id: shellcheck
 
   # Custom components: format like upstream ESPHome.
   - repo: https://github.com/pre-commit/mirrors-clang-format

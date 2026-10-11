@@ -24,6 +24,8 @@ All notable changes to this project are documented here. The format follows
 - Optional firmware publishing kit: release images and an ESP Web Tools
   installer on GitHub Pages, from secret-free firmware configs.
 - Renovate config that also updates `github://` package tags.
+- shellcheck, bundled into the actionlint hook so workflow shell is
+  checked the same way locally and in CI.
 - Claude Code plugin `esphome-rules` with `new`, `check`, `release` and
   `rules` skills, and its marketplace.
 - Release strategy, Claude Code, configuration and overview docs.

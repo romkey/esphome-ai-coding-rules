@@ -64,6 +64,8 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: .github/workflows/ci.yaml
+          # Matrix jobs share one uv cache; let only the first save it.
+          save-cache: ${{ strategy.job-index == 0 }}
 
       - name: Install ESPHome and ccache
         id: esphome

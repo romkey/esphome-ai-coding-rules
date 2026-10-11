@@ -131,7 +131,7 @@ via OTA or https://web.esphome.io instead.
 - Personal device configs go in `examples/local-*.yaml` (ignored, and
   skipped by `list-configs.sh`).
 - [`.pre-commit-config.yaml`](templates/.pre-commit-config.yaml) holds every
-  lint and format check (yamllint, actionlint, clang-format, ruff, whitespace,
+  lint and format check (yamllint, actionlint, shellcheck, clang-format, ruff, whitespace,
   large files, private keys). The same hooks run via
   `docker compose run --rm lint`, as a git hook (`uvx pre-commit install`),
   and in CI.
