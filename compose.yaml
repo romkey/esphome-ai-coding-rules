@@ -1,6 +1,7 @@
 # Lint this repo without installing anything:
 #
 #   docker compose run --rm lint
+#   docker compose run --rm secrets    # scan the git history for secrets
 #
 # To build and validate the templates, use their own compose file:
 #
@@ -22,6 +23,13 @@ services:
       - lint-cache:/root/.cache
     working_dir: /project
     command: uvx pre-commit@4.6.2 run --all-files --show-diff-on-failure
+
+  # Scans every commit in the git history for secrets, like CI does.
+  secrets:
+    image: ghcr.io/gitleaks/gitleaks:v8.30.1
+    volumes:
+      - .:/project
+    command: git /project --redact --verbose
 
 volumes:
   lint-cache:

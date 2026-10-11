@@ -21,7 +21,7 @@ when starting a project. `/esphome-rules:new` does all of this for you.
 | `examples/esp32*.yaml` | ESP32, ESP32-C3, ESP32-S3 configs: board + pins only | Boards and pins for the real hardware |
 | `examples/common/base.yaml` | Shared: project version, esphome-lib packages, api/ota, Wi-Fi, recovery | `romkey.REPO`; add `i2c-scan` if there's I2C |
 | `examples/secrets.yaml.example` | Valid dummy secrets for CI | Add any new `!secret` names |
-| `compose.yaml` | `validate`, `build`, `lint`, `dashboard`, `esphome` | Nothing |
+| `compose.yaml` | `validate`, `build`, `lint`, `secrets`, `dashboard`, `esphome` | Nothing |
 | `scripts/list-configs.sh` | Lists buildable configs for CI, release and compose | Nothing |
 | `scripts/changelog-section.sh` | Prints a version's changelog notes; release check | Nothing |
 | `scripts/bump-version.sh` | Next version from the latest tag; updates CHANGELOG and `project_version` | Nothing |
@@ -39,6 +39,8 @@ when starting a project. `/esphome-rules:new` does all of this for you.
 | `datasheets/README.md` | Datasheet + `-license.txt` convention and template | Add datasheets, or delete the directory |
 | `scripts/check-datasheets.sh` | pre-commit check that every datasheet has its license file | Nothing |
 | `scripts/setup-github.sh` | Protects `main` and enables security features | Nothing; run once |
+| `scripts/check-secrets.py` | pre-commit check: real `secrets.yaml` values, hard-coded credentials, `!secret` in published firmware | Nothing |
+| `.gitleaks.toml` | gitleaks rules, exempting `secrets.yaml.example` | Nothing |
 | `SECURITY.md` | How to report vulnerabilities privately | Nothing |
 | `optional/firmware-publishing/` | Firmware + web installer for apps | Copy `firmware/` and `web/` to the root if wanted, then delete `optional/` |
 
@@ -63,6 +65,7 @@ cp examples/secrets.yaml.example examples/secrets.yaml
 docker compose run --rm validate
 docker compose run --rm build
 docker compose run --rm lint
+docker compose run --rm secrets
 docker compose up dashboard
 ```
 

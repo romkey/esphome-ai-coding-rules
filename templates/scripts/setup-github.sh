@@ -7,8 +7,9 @@
 # - main is protected by a ruleset: changes only through pull requests,
 #   squash-merged, with the "CI passed" and "Lint" checks green and the
 #   branch up to date; no force-pushes or deletion.
-# - Secret scanning with push protection, Dependabot alerts (Renovate reads
-#   them), private vulnerability reporting, and CodeQL default setup.
+# - Secret scanning with push protection, generic-secret patterns and
+#   validity checks, Dependabot alerts (Renovate reads them), private
+#   vulnerability reporting, and CodeQL default setup.
 # - Workflow tokens are read-only unless a job asks for more, and workflows
 #   may open PRs (the release workflow does).
 # - Merged branches are deleted.
@@ -40,6 +41,26 @@ try "secret scanning and push protection" \
   }
 }
 EOF
+
+# Generic secrets (passwords, connection strings) and checking whether found
+# tokens are still live. These need GitHub Secret Protection; without it
+# GitHub accepts the request but leaves them off, so check what stuck.
+gh api -X PATCH "repos/$repo" --input - >/dev/null 2>&1 <<'EOF' || true
+{
+  "security_and_analysis": {
+    "secret_scanning_non_provider_patterns": {"status": "enabled"},
+    "secret_scanning_validity_checks": {"status": "enabled"}
+  }
+}
+EOF
+for feature in secret_scanning_non_provider_patterns secret_scanning_validity_checks; do
+  status=$(gh api "repos/$repo" --jq ".security_and_analysis.$feature.status // \"unavailable\"")
+  if [ "$status" = enabled ]; then
+    echo "  ok: $feature"
+  else
+    echo "  skipped: $feature is $status (needs GitHub Secret Protection)"
+  fi
+done
 
 try "Dependabot alerts" gh api -X PUT "repos/$repo/vulnerability-alerts"
 try "private vulnerability reporting" gh api -X PUT "repos/$repo/private-vulnerability-reporting"

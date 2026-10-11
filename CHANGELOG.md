@@ -6,6 +6,20 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Secret protection. A pre-commit check (`scripts/check-secrets.py`) fails
+  if a value from your local `secrets.yaml` appears in a committed file, if
+  an ESPHome config hard-codes a password, SSID or key instead of
+  `!secret`, or if a published firmware config uses `!secret`; it never
+  prints the value. gitleaks checks staged changes, and the Lint job and a
+  new `secrets` compose service scan the whole history. Firmware images
+  (`.bin` etc., which contain the Wi-Fi credentials they were built with)
+  are gitignored and rejected. `setup-github.sh` also turns on generic
+  secret patterns and validity checks where available (they need GitHub
+  Secret Protection) and reports when they aren't. RULES.md: never expose
+  secrets; rotate any that leak.
+
 ## [0.5.0] - 2026-10-11
 
 ### Added
