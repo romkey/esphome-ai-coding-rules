@@ -46,7 +46,7 @@ scripts/           list-configs.sh, changelog-section.sh, bump-version.sh,
                    check-secrets.py,
                    setup-github.sh
 .github/           workflows/ci.yaml, lint.yaml, release.yaml
-docker-compose.yml  renovate.json  .pre-commit-config.yaml  .yamllint.yaml
+docker-compose.yaml  renovate.json  .pre-commit-config.yaml  .yamllint.yaml
 .gitleaks.toml  .gitignore  .clang-format  README.md  CHANGELOG.md  LICENSE  SECURITY.md
 AGENTS.md
 ```
@@ -78,9 +78,9 @@ AGENTS.md
 - Name new files `.yaml`. Humans will add `.yml` files anyway, so everything
   must accept both: `.gitignore`, yamllint, `scripts/list-configs.sh`, CI
   cache keys, Renovate patterns. Never write a pattern that matches only one.
-- Exceptions to `.yaml`: secrets live in `secrets.yaml` (ESPHome reads no
-  other name) and the compose file is `docker-compose.yml`, never
-  `compose.yaml`, `compose.yml` or `docker-compose.yaml`.
+- Secrets live in `secrets.yaml`; ESPHome reads no other name.
+- The compose file is `docker-compose.yaml`, never `compose.yaml`,
+  `compose.yml` or `docker-compose.yml`.
 - Every package starts with a comment block: what it does, what the including
   config must provide (ids, buses, required substitutions), and every
   substitution with its default.
@@ -153,7 +153,7 @@ license file is missing.
 
 ## 6. Docker
 
-Use [`templates/docker-compose.yml`](templates/docker-compose.yml) unchanged except for
+Use [`templates/docker-compose.yaml`](templates/docker-compose.yaml) unchanged except for
 image pins. It mounts the whole repo so `../packages/` includes resolve,
 keeps toolchains and the compiler cache in a named volume at `/cache` and
 build trees in one at `/build` (the ESPHome image's own convention), pulls

@@ -7,7 +7,7 @@ projects, and a Claude Code plugin that applies them.
 
 - `RULES.md`: the rules. The one file an AI must read.
 - `templates/`: a complete, buildable example project (packages, ESP32/C3/S3
-  examples, docker-compose.yml, workflows, pre-commit, Renovate, docs skeletons).
+  examples, docker-compose.yaml, workflows, pre-commit, Renovate, docs skeletons).
   New projects copy it.
 - `templates/optional/firmware-publishing/`: add-on for apps that publish
   installable firmware and a web installer.
@@ -25,5 +25,5 @@ projects, and a Claude Code plugin that applies them.
   firmware): README order and badges, CHANGELOG, pre-commit, Renovate,
   release workflow, MIT.
 - Changing a template means testing it: `docker compose -f
-  templates/docker-compose.yml run --rm build` and `docker compose run --rm lint`.
+  templates/docker-compose.yaml run --rm build` and `docker compose run --rm lint`.
 - Plugin version in `.claude-plugin/plugin.json` equals the release tag.

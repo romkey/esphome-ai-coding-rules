@@ -16,9 +16,8 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
-- The compose file is `docker-compose.yml` (was `compose.yaml`); an
-  exception to the `.yaml` rule, like `secrets.yaml`. Existing repos rename
-  theirs (UPGRADING.md).
+- The compose file is `docker-compose.yaml` (was `compose.yaml`). Existing
+  repos rename theirs, whatever it's called now (UPGRADING.md).
 - RULES.md requires AGENTS.md to record the rules version a repo follows,
   so it's clear which UPGRADING.md entries it still needs.
 

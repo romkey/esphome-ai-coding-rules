@@ -5,7 +5,7 @@ own [RULES.md](RULES.md) where it applies. Read [docs/overview.md](docs/overview
 first.
 
 - Changing a template means testing it like a project:
-  `docker compose -f templates/docker-compose.yml run --rm validate` (and `build`),
+  `docker compose -f templates/docker-compose.yaml run --rm validate` (and `build`),
   plus `docker compose run --rm lint` here.
 - Never edit `.github/workflows/ci.yaml` directly; edit
   `templates/.github/workflows/ci.yaml` and run `scripts/sync-ci.py`.

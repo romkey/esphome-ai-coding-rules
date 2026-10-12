@@ -25,27 +25,27 @@ no way to tell which entries here they still need.
   version you're upgrading the repo to. Before that, work out which
   entries below the repo already has by checking each one.
 
-## v0.7.0: compose file is docker-compose.yml
+## v0.7.0: compose file is docker-compose.yaml
 
 Do this before the other v0.7.0 entries, which refer to the new name.
 
 - **Check:** the repo has `compose.yaml`, `compose.yml` or
-  `docker-compose.yaml`.
-- **Fix:** `git mv <old name> docker-compose.yml`, then update every
+  `docker-compose.yml`.
+- **Fix:** `git mv <old name> docker-compose.yaml`, then update every
   reference to the old name (README, docs, AGENTS.md, comments in
   `scripts/`, `renovate.json` descriptions). Commands don't change:
-  `docker compose` finds `docker-compose.yml` on its own.
+  `docker compose` finds `docker-compose.yaml` on its own.
 
 ## v0.7.0: compiled firmware unreachable from the host
 
-`docker-compose.yml` keeps builds in the `esphome-build` volume, so the
+`docker-compose.yaml` keeps builds in the `esphome-build` volume, so the
 `.factory.bin` needed for a first flash with web.esphome.io (the documented
 path on macOS) never reaches the host.
 
-- **Check:** `docker-compose.yml` mounts `esphome-build:/build` but has no
+- **Check:** `docker-compose.yaml` mounts `esphome-build:/build` but has no
   `firmware` service, or the repo has no `scripts/export-firmware.py`.
 - **Fix:** copy `scripts/export-firmware.py` and the `firmware` service
-  from `templates/docker-compose.yml`; make sure `dist/` and `*.bin` are
+  from `templates/docker-compose.yaml`; make sure `dist/` and `*.bin` are
   gitignored; point the README's flashing steps at
   `docker compose run --rm firmware` and `dist/<name>.factory.bin`.
 
