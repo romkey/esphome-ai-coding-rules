@@ -42,7 +42,8 @@ tests/             optional: pytest unit tests for component logic
 datasheets/        manufacturer datasheets, each with a -license.txt (§5)
 docs/              configuration.md, overview.md
 scripts/           list-configs.sh, changelog-section.sh, bump-version.sh,
-                   collect-firmware.sh, check-datasheets.sh, check-secrets.py,
+                   collect-firmware.sh, export-firmware.py, check-datasheets.sh,
+                   check-secrets.py,
                    setup-github.sh
 .github/           workflows/ci.yaml, lint.yaml, release.yaml
 compose.yaml  renovate.json  .pre-commit-config.yaml  .yamllint.yaml
@@ -155,10 +156,14 @@ image pins. It mounts the whole repo so `../packages/` includes resolve,
 keeps toolchains and the compiler cache in a named volume at `/cache` and
 build trees in one at `/build` (the ESPHome image's own convention), pulls
 the floating `stable` tag daily, honors `ESPHOME_VERSION`, and provides
-`esphome`, `validate`, `build`, `dashboard`, `lint` and `secrets` services. Configs are
+`esphome`, `validate`, `build`, `firmware`, `dashboard`, `lint` and
+`secrets` services. Configs are
 found by `scripts/list-configs.sh`, so nothing needs editing when one is
-added. Docker Desktop on macOS cannot pass USB through; document flashing
-via OTA or https://web.esphome.io instead.
+added. Builds stay in the `/build` volume, so `firmware` copies each config's
+`.factory.bin` and `.ota.bin` to `dist/` on the host. Docker Desktop on
+macOS cannot pass USB through; document the first flash as
+`docker compose run --rm firmware`, then upload
+`dist/<name>.factory.bin` with https://web.esphome.io, and OTA after that.
 
 ## 7. Git and pre-commit
 

@@ -3,6 +3,7 @@
 #   cp examples/secrets.yaml.example examples/secrets.yaml   # then edit it
 #   docker compose run --rm validate      # esphome config on every example
 #   docker compose run --rm build         # compile every example
+#   docker compose run --rm firmware      # compile, then copy images to dist/
 #   docker compose run --rm lint          # all pre-commit checks, like CI
 #   docker compose run --rm secrets       # scan the git history for secrets
 #   docker compose run --rm esphome run examples/example.yaml   # flash via OTA
@@ -14,8 +15,9 @@
 # Named volumes are also much faster than bind mounts on macOS.
 #
 # Set ESPHOME_VERSION to pin a release, e.g. ESPHOME_VERSION=2026.9.1.
-# Docker Desktop on macOS cannot pass USB through; flash the first time with
-# https://web.esphome.io and use OTA after that.
+# Docker Desktop on macOS cannot pass USB through. For a first flash, run the
+# firmware service and upload dist/<name>.factory.bin with
+# https://web.esphome.io; use OTA after that.
 
 x-esphome: &esphome
   image: ghcr.io/esphome/esphome:${ESPHOME_VERSION:-stable}
@@ -42,6 +44,17 @@ services:
     <<: *esphome
     entrypoint: ["/bin/sh", "-c"]
     command: ["exec /entrypoint.sh compile $$(scripts/list-configs.sh)"]
+
+  # Builds live in the esphome-build volume, out of the host's reach. This
+  # compiles every config and copies <name>.factory.bin and <name>.ota.bin
+  # to dist/ (gitignored: the images contain your Wi-Fi credentials).
+  firmware:
+    <<: *esphome
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        /entrypoint.sh compile $$(scripts/list-configs.sh)
+        && python3 scripts/export-firmware.py dist $$(scripts/list-configs.sh)
 
   dashboard:
     <<: *esphome
