@@ -7,14 +7,18 @@ must apply**, newest first.
 **AI assistants re-scanning a repo** (for example with
 `/esphome-rules:check`): read the version in the repo's `AGENTS.md`
 ("Follows esphome-ai-coding-rules vX.Y.Z"; treat a missing one as v0.0.0),
-apply every entry newer than it, then update that line to the current
-release. Check each entry against what's actually there; a repo may have
+apply every entry newer than it (and any `Unreleased` ones, if you're
+working from `main`), then update that line to the current release. Check each entry against what's actually there; a repo may have
 diverged deliberately, so ask before overwriting customizations.
 
 **Anyone changing these rules**: when a change means existing repos must
-update something, add an entry here in the same PR.
+update something, add an entry here in the same PR, headed
+`## Unreleased: <what changed>`. Don't guess the version: cutting a release
+(`scripts/bump-version.sh`) renames `Unreleased` to it. An entry is only
+needed for something a release shipped; a bug fixed before its release
+needs none.
 
-## v0.7.0: record the rules version
+## Unreleased: record the rules version
 
 Repos didn't record which version of these rules they follow, so there was
 no way to tell which entries here they still need.
@@ -25,9 +29,10 @@ no way to tell which entries here they still need.
   version you're upgrading the repo to. Before that, work out which
   entries below the repo already has by checking each one.
 
-## v0.7.0: compose file is docker-compose.yaml
+## Unreleased: compose file is docker-compose.yaml
 
-Do this before the other v0.7.0 entries, which refer to the new name.
+Do this before the other entries from the same release, which refer to the
+new name.
 
 - **Check:** the repo has `compose.yaml`, `compose.yml` or
   `docker-compose.yml`.
@@ -36,7 +41,7 @@ Do this before the other v0.7.0 entries, which refer to the new name.
   `scripts/`, `renovate.json` descriptions). Commands don't change:
   `docker compose` finds `docker-compose.yaml` on its own.
 
-## v0.7.0: compiled firmware unreachable from the host
+## Unreleased: compiled firmware unreachable from the host
 
 `docker-compose.yaml` keeps builds in the `esphome-build` volume, so the
 `.factory.bin` needed for a first flash with web.esphome.io (the documented
@@ -49,7 +54,7 @@ path on macOS) never reaches the host.
   gitignored; point the README's flashing steps at
   `docker compose run --rm firmware` and `dist/<name>.factory.bin`.
 
-## v0.7.0: release workflow can publish the same release twice
+## Unreleased: release workflow can publish the same release twice
 
 `.github/workflows/release.yaml` grouped concurrency by event name, so a
 run for a merged `release/vX.Y.Z` PR and a run for the `vX.Y.Z` tag it
