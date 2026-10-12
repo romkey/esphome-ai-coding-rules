@@ -3,7 +3,7 @@
 
     scripts/export-firmware.py OUTDIR CONFIG...
 
-Run after `esphome compile` (compose.yaml's `firmware` service does both).
+Run after `esphome compile` (docker-compose.yml's `firmware` service does both).
 For each config, copies <name>.factory.bin (the full image for a blank
 chip, e.g. a first flash with https://web.esphome.io) and <name>.ota.bin to
 OUTDIR. Builds live in a Docker volume, so this is how they reach the host.

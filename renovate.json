@@ -36,14 +36,14 @@
     },
     {
       "customType": "regex",
-      "description": "uv image in compose.yaml's inline Dockerfile",
-      "managerFilePatterns": ["/(^|/)compose\\.ya?ml$/"],
+      "description": "uv image in docker-compose.yml's inline Dockerfile",
+      "managerFilePatterns": ["/(^|/)(docker-)?compose\\.ya?ml$/"],
       "matchStrings": ["FROM (?<depName>ghcr\\.io/astral-sh/uv):(?<currentValue>[\\w.-]+)"],
       "datasourceTemplate": "docker"
     },
     {
       "customType": "regex",
-      "description": "gitleaks image in workflows and compose.yaml",
+      "description": "gitleaks image in workflows and docker-compose.yml",
       "managerFilePatterns": ["/\\.ya?ml$/"],
       "matchStrings": ["(?<depName>ghcr\\.io/gitleaks/gitleaks):(?<currentValue>v\\d+\\.\\d+\\.\\d+)"],
       "datasourceTemplate": "docker"

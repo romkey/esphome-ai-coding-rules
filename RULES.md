@@ -46,7 +46,7 @@ scripts/           list-configs.sh, changelog-section.sh, bump-version.sh,
                    check-secrets.py,
                    setup-github.sh
 .github/           workflows/ci.yaml, lint.yaml, release.yaml
-compose.yaml  renovate.json  .pre-commit-config.yaml  .yamllint.yaml
+docker-compose.yml  renovate.json  .pre-commit-config.yaml  .yamllint.yaml
 .gitleaks.toml  .gitignore  .clang-format  README.md  CHANGELOG.md  LICENSE  SECURITY.md
 AGENTS.md
 ```
@@ -78,7 +78,9 @@ AGENTS.md
 - Name new files `.yaml`. Humans will add `.yml` files anyway, so everything
   must accept both: `.gitignore`, yamllint, `scripts/list-configs.sh`, CI
   cache keys, Renovate patterns. Never write a pattern that matches only one.
-- Secrets live in `secrets.yaml`; ESPHome reads no other name.
+- Exceptions to `.yaml`: secrets live in `secrets.yaml` (ESPHome reads no
+  other name) and the compose file is `docker-compose.yml`, never
+  `compose.yaml`, `compose.yml` or `docker-compose.yaml`.
 - Every package starts with a comment block: what it does, what the including
   config must provide (ids, buses, required substitutions), and every
   substitution with its default.
@@ -151,7 +153,7 @@ license file is missing.
 
 ## 6. Docker
 
-Use [`templates/compose.yaml`](templates/compose.yaml) unchanged except for
+Use [`templates/docker-compose.yml`](templates/docker-compose.yml) unchanged except for
 image pins. It mounts the whole repo so `../packages/` includes resolve,
 keeps toolchains and the compiler cache in a named volume at `/cache` and
 build trees in one at `/build` (the ESPHome image's own convention), pulls
@@ -358,8 +360,11 @@ minimal working snippet.
 is, the file map, each package in one line, required ids, conventions. No
 prose padding.
 
-**AGENTS.md** (copy to CLAUDE.md or symlink): one line telling AI tools to
-follow these rules, plus anything project-specific.
+**AGENTS.md** (copy to CLAUDE.md or symlink): tells AI tools to follow
+these rules and records the rules version the repo follows
+("Follows esphome-ai-coding-rules vX.Y.Z"), so anyone can see which
+UPGRADING.md entries it still needs. Update that line whenever the repo
+is brought up to a newer version. Plus anything project-specific.
 
 ## 11. License
 

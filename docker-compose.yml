@@ -6,7 +6,7 @@
 # To build and validate the templates, use their own compose file:
 #
 #   cp templates/examples/secrets.yaml.example templates/examples/secrets.yaml
-#   docker compose -f templates/compose.yaml run --rm build
+#   docker compose -f templates/docker-compose.yml run --rm build
 
 services:
   # Runs .pre-commit-config.yaml: yamllint, actionlint, clang-format, ruff...

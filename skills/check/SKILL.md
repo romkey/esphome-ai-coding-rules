@@ -15,7 +15,7 @@ Audit this repository against esphome-ai-coding-rules. Arguments:
    entry newer than that is a finding, most important first.
 2. Check each section of RULES.md against this repo: layout, YAML
    conventions, examples (ESP32 + C3 + S3, base.yaml contents), Home
-   Assistant conventions, components, compose.yaml, .gitignore, pre-commit,
+   Assistant conventions, components, docker-compose.yml, .gitignore, pre-commit,
    workflows (including stale action versions: look them up), Renovate,
    release setup, README order/badges/AI disclosure, CHANGELOG, docs/,
    AGENTS.md, LICENSE.

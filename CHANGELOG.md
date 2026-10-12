@@ -14,6 +14,14 @@ All notable changes to this project are documented here. The format follows
   recorded in its AGENTS.md, and to add an entry when a rule change needs
   existing repos updated.
 
+### Changed
+
+- The compose file is `docker-compose.yml` (was `compose.yaml`); an
+  exception to the `.yaml` rule, like `secrets.yaml`. Existing repos rename
+  theirs (UPGRADING.md).
+- RULES.md requires AGENTS.md to record the rules version a repo follows,
+  so it's clear which UPGRADING.md entries it still needs.
+
 ### Fixed
 
 - Compiled firmware couldn't reach the host: builds live in a Docker

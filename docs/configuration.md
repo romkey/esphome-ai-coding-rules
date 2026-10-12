@@ -21,7 +21,7 @@ when starting a project. `/esphome-rules:new` does all of this for you.
 | `examples/esp32*.yaml` | ESP32, ESP32-C3, ESP32-S3 configs: board + pins only | Boards and pins for the real hardware |
 | `examples/common/base.yaml` | Shared: project version, esphome-lib packages, api/ota, Wi-Fi, recovery | `romkey.REPO`; add `i2c-scan` if there's I2C |
 | `examples/secrets.yaml.example` | Valid dummy secrets for CI | Add any new `!secret` names |
-| `compose.yaml` | `validate`, `build`, `firmware`, `lint`, `secrets`, `dashboard`, `esphome` | Nothing |
+| `docker-compose.yml` | `validate`, `build`, `firmware`, `lint`, `secrets`, `dashboard`, `esphome` | Nothing |
 | `scripts/list-configs.sh` | Lists buildable configs for CI, release and compose | Nothing |
 | `scripts/changelog-section.sh` | Prints a version's changelog notes; release check | Nothing |
 | `scripts/bump-version.sh` | Next version from the latest tag; updates CHANGELOG and `project_version` | Nothing |

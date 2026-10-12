@@ -72,7 +72,7 @@ template config on ESP32, ESP32-C3 and ESP32-S3.
 ```bash
 docker compose run --rm lint
 cp templates/examples/secrets.yaml.example templates/examples/secrets.yaml
-docker compose -f templates/compose.yaml run --rm build
+docker compose -f templates/docker-compose.yml run --rm build
 claude plugin validate .
 ```
 
