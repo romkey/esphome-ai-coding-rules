@@ -32,6 +32,12 @@ All notable changes to this project are documented here. The format follows
   pushes no longer race to publish the same release. Concurrency is per
   version, tag pushes by github-actions[bot] are skipped, and publishing
   skips a release that already exists.
+- The Release workflow run right after merging a PR failed because CI for
+  the merge commit was still running; it now waits up to 30 minutes for
+  that CI and fails only if it doesn't pass.
+- UPGRADING.md entries are headed `Unreleased:` and get their version from
+  `scripts/bump-version.sh` at release time, instead of a guessed version
+  (they said v0.7.0 even if the release was v0.6.1).
 
 ## [0.6.0] - 2026-10-11
 

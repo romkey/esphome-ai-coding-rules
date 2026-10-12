@@ -39,7 +39,7 @@ jobs:
     name: Open release PR
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 40  # includes waiting up to 30 minutes for CI
     permissions:
       contents: write
       pull-requests: write
@@ -55,16 +55,25 @@ jobs:
         with:
           fetch-depth: 0  # all tags, to find the latest version
 
-      - name: Check CI passed for this commit
+      # Merging a PR starts CI on main, so a release right after a merge
+      # waits for that CI rather than failing.
+      - name: Wait for CI to pass on this commit
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           state() { gh run list --workflow ci.yaml --limit 1 --json status,conclusion \
             --jq '.[] | "\(.status) \(.conclusion)"' "$@"; }
-          run=$(state --commit "$GITHUB_SHA")
+          for i in $(seq 1 90); do  # up to 30 minutes
+            run=$(state --commit "$GITHUB_SHA")
+            case "$run" in "completed "*) break ;; esac
+            # No CI run for this commit after 2 minutes: it didn't run CI.
+            if [ -z "$run" ] && [ "$i" -ge 6 ]; then break; fi
+            if [ "$i" = 1 ]; then echo "Waiting for CI on $GITHUB_SHA to finish..."; fi
+            sleep 20
+          done
           [ -n "$run" ] || run=$(state --branch main --status completed)
           if [ "$run" != "completed success" ]; then
-            echo "::error::CI for this commit is '${run:-missing}'; wait for it to pass"
+            echo "::error::CI for this commit is '${run:-missing}', not success"
             exit 1
           fi
 

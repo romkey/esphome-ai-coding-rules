@@ -253,8 +253,10 @@ warnings, not failures. Runs `tests/` with pytest if present. Ends with
 `bump` choice of `patch` (default), `minor` or `major`: minor resets patch
 to 0, major resets minor and patch. It checks CI passed, runs
 `scripts/bump-version.sh` on a `release/vX.Y.Z` branch, opens a
-"Release vX.Y.Z" PR and approves its CI and Lint runs. Merging that PR tags the merge commit and creates the
-GitHub Release (§9). Pushing a `vX.Y.Z` tag by hand also works.
+"Release vX.Y.Z" PR and approves its CI and Lint runs. Merging that PR
+tags the merge commit and creates the GitHub Release (§9). Run right after
+a merge, it waits for that commit's CI to finish. Pushing a `vX.Y.Z` tag
+by hand also works.
 
 **Speed. Cache everything that can be cached:**
 
@@ -384,7 +386,8 @@ These rules change. When you re-scan a repo that already follows them,
 read [UPGRADING.md](UPGRADING.md) and apply every entry newer than the
 version in the repo's `AGENTS.md` ("Follows esphome-ai-coding-rules
 vX.Y.Z"), then update that line. When you change these rules in a way
-existing repos must follow, add an entry to UPGRADING.md in the same PR.
+existing repos must follow, add an entry to UPGRADING.md in the same PR,
+headed `## Unreleased: ...`; the release labels it with its version.
 
 ## 13. Before finishing
 

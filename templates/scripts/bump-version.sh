@@ -1,6 +1,7 @@
 #!/bin/sh
 # Prepares a release: works out the next version from the latest vX.Y.Z tag,
-# moves CHANGELOG.md's Unreleased entries under it, and sets every
+# moves CHANGELOG.md's Unreleased entries under it, labels UPGRADING.md's
+# "## Unreleased:" entries with it (if that file exists), and sets every
 # project_version (and .claude-plugin/plugin.json, if present) to it.
 # Prints the new version. Doesn't commit or tag.
 #
@@ -48,6 +49,10 @@ for dir in examples firmware packages; do
         perl -pi -e "s/(project_version:\s*)\"[^\"]*\"/\${1}\"$version\"/" "$file"
       done
 done
+
+if [ -f UPGRADING.md ]; then
+  perl -pi -e "s/^## Unreleased: /## v$version: /" UPGRADING.md
+fi
 
 if [ -f .claude-plugin/plugin.json ]; then
   jq --arg v "$version" '.version = $v' .claude-plugin/plugin.json > .claude-plugin/plugin.json.new

@@ -55,8 +55,9 @@ choose the bump and run. Patch is the default; minor resets patch to 0;
 major resets minor and patch to 0 (1.4.2 → 1.4.3, 1.5.0 or 2.0.0). The
 workflow:
 
-1. refuses to run from anything but `main`, or if CI for that commit
-   didn't pass;
+1. refuses to run from anything but `main`; waits up to 30 minutes for
+   CI on that commit to finish (so you can run it right after merging),
+   and stops if CI didn't pass;
 2. runs `scripts/bump-version.sh` on a new `release/vX.Y.Z` branch: it
    finds the latest `vX.Y.Z` tag (none yet means 0.0.0), computes the next
    version, refuses if `## [Unreleased]` is empty, moves those entries
