@@ -21,11 +21,12 @@ when starting a project. `/esphome-rules:new` does all of this for you.
 | `examples/esp32*.yaml` | ESP32, ESP32-C3, ESP32-S3 configs: board + pins only | Boards and pins for the real hardware |
 | `examples/common/base.yaml` | Shared: project version, esphome-lib packages, api/ota, Wi-Fi, recovery | `romkey.REPO`; add `i2c-scan` if there's I2C |
 | `examples/secrets.yaml.example` | Valid dummy secrets for CI | Add any new `!secret` names |
-| `compose.yaml` | `validate`, `build`, `lint`, `secrets`, `dashboard`, `esphome` | Nothing |
+| `docker-compose.yaml` | `validate`, `build`, `firmware`, `lint`, `secrets`, `dashboard`, `esphome` | Nothing |
 | `scripts/list-configs.sh` | Lists buildable configs for CI, release and compose | Nothing |
 | `scripts/changelog-section.sh` | Prints a version's changelog notes; release check | Nothing |
 | `scripts/bump-version.sh` | Next version from the latest tag; updates CHANGELOG and `project_version` | Nothing |
-| `scripts/collect-firmware.sh` | Gathers firmware images + web installer manifest | Nothing |
+| `scripts/collect-firmware.sh` | Gathers firmware images + web installer manifest (release workflow) | Nothing |
+| `scripts/export-firmware.py` | Copies compiled images out of the build volume to `dist/` (`firmware` service) | Nothing |
 | `.github/workflows/ci.yaml` | Builds every config; weekly beta build; unit tests | Nothing |
 | `.github/workflows/lint.yaml` | Runs pre-commit | Nothing |
 | `.github/workflows/release.yaml` | Actions-tab button (patch/minor/major) opens a release PR; merging it tags and publishes; firmware if `firmware/` exists | Nothing |
@@ -64,6 +65,7 @@ when starting a project. `/esphome-rules:new` does all of this for you.
 cp examples/secrets.yaml.example examples/secrets.yaml
 docker compose run --rm validate
 docker compose run --rm build
+docker compose run --rm firmware
 docker compose run --rm lint
 docker compose run --rm secrets
 docker compose up dashboard

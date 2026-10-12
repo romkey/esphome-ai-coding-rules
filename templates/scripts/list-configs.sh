@@ -1,7 +1,7 @@
 #!/bin/sh
 # Prints every buildable ESPHome config, one per line: examples/ and, for
 # projects that publish firmware, firmware/. CI, the release workflow and
-# compose.yaml all use this so the list lives in one place.
+# docker-compose.yaml all use this so the list lives in one place.
 #
 #   scripts/list-configs.sh              # examples/ and firmware/
 #   scripts/list-configs.sh firmware     # just firmware/

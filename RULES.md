@@ -42,10 +42,11 @@ tests/             optional: pytest unit tests for component logic
 datasheets/        manufacturer datasheets, each with a -license.txt (§5)
 docs/              configuration.md, overview.md
 scripts/           list-configs.sh, changelog-section.sh, bump-version.sh,
-                   collect-firmware.sh, check-datasheets.sh, check-secrets.py,
+                   collect-firmware.sh, export-firmware.py, check-datasheets.sh,
+                   check-secrets.py,
                    setup-github.sh
 .github/           workflows/ci.yaml, lint.yaml, release.yaml
-compose.yaml  renovate.json  .pre-commit-config.yaml  .yamllint.yaml
+docker-compose.yaml  renovate.json  .pre-commit-config.yaml  .yamllint.yaml
 .gitleaks.toml  .gitignore  .clang-format  README.md  CHANGELOG.md  LICENSE  SECURITY.md
 AGENTS.md
 ```
@@ -78,6 +79,8 @@ AGENTS.md
   must accept both: `.gitignore`, yamllint, `scripts/list-configs.sh`, CI
   cache keys, Renovate patterns. Never write a pattern that matches only one.
 - Secrets live in `secrets.yaml`; ESPHome reads no other name.
+- The compose file is `docker-compose.yaml`, never `compose.yaml`,
+  `compose.yml` or `docker-compose.yml`.
 - Every package starts with a comment block: what it does, what the including
   config must provide (ids, buses, required substitutions), and every
   substitution with its default.
@@ -150,15 +153,19 @@ license file is missing.
 
 ## 6. Docker
 
-Use [`templates/compose.yaml`](templates/compose.yaml) unchanged except for
+Use [`templates/docker-compose.yaml`](templates/docker-compose.yaml) unchanged except for
 image pins. It mounts the whole repo so `../packages/` includes resolve,
 keeps toolchains and the compiler cache in a named volume at `/cache` and
 build trees in one at `/build` (the ESPHome image's own convention), pulls
 the floating `stable` tag daily, honors `ESPHOME_VERSION`, and provides
-`esphome`, `validate`, `build`, `dashboard`, `lint` and `secrets` services. Configs are
+`esphome`, `validate`, `build`, `firmware`, `dashboard`, `lint` and
+`secrets` services. Configs are
 found by `scripts/list-configs.sh`, so nothing needs editing when one is
-added. Docker Desktop on macOS cannot pass USB through; document flashing
-via OTA or https://web.esphome.io instead.
+added. Builds stay in the `/build` volume, so `firmware` copies each config's
+`.factory.bin` and `.ota.bin` to `dist/` on the host. Docker Desktop on
+macOS cannot pass USB through; document the first flash as
+`docker compose run --rm firmware`, then upload
+`dist/<name>.factory.bin` with https://web.esphome.io, and OTA after that.
 
 ## 7. Git and pre-commit
 
@@ -353,8 +360,11 @@ minimal working snippet.
 is, the file map, each package in one line, required ids, conventions. No
 prose padding.
 
-**AGENTS.md** (copy to CLAUDE.md or symlink): one line telling AI tools to
-follow these rules, plus anything project-specific.
+**AGENTS.md** (copy to CLAUDE.md or symlink): tells AI tools to follow
+these rules and records the rules version the repo follows
+("Follows esphome-ai-coding-rules vX.Y.Z"), so anyone can see which
+UPGRADING.md entries it still needs. Update that line whenever the repo
+is brought up to a newer version. Plus anything project-specific.
 
 ## 11. License
 
@@ -368,7 +378,15 @@ follow these rules, plus anything project-specific.
   confirmation; if it already has one, ask whether to keep it.
 - The license covers the repo's own work, not `datasheets/` (§5).
 
-## 12. Before finishing
+## 12. Keeping repos current
+
+These rules change. When you re-scan a repo that already follows them,
+read [UPGRADING.md](UPGRADING.md) and apply every entry newer than the
+version in the repo's `AGENTS.md` ("Follows esphome-ai-coding-rules
+vX.Y.Z"), then update that line. When you change these rules in a way
+existing repos must follow, add an entry to UPGRADING.md in the same PR.
+
+## 13. Before finishing
 
 - `docker compose run --rm validate` passes for every config (and `build`
   for C++ or framework changes).

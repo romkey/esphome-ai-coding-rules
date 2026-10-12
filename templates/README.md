@@ -45,6 +45,18 @@ docker compose run --rm lint
 The first build downloads the toolchains into a Docker volume; later builds
 reuse them and only recompile what changed.
 
+## Flashing
+
+To flash a new board, build the firmware images:
+
+```bash
+docker compose run --rm firmware
+```
+
+Then open https://web.esphome.io in Chrome or Edge, connect the board over
+USB and upload `dist/<name>.factory.bin`. After that, update over the
+network (OTA). The images contain your Wi-Fi credentials; don't share them.
+
 ## License
 
 [MIT](LICENSE), except the manufacturer datasheets in [datasheets/](datasheets/),

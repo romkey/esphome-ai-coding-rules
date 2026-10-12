@@ -6,6 +6,33 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- UPGRADING.md: fixes that repos set up under older rules must apply, with
+  how to check and fix each. RULES.md §12 and the check skill tell AI
+  assistants re-scanning a repo to apply entries newer than the version
+  recorded in its AGENTS.md, and to add an entry when a rule change needs
+  existing repos updated.
+
+### Changed
+
+- The compose file is `docker-compose.yaml` (was `compose.yaml`). Existing
+  repos rename theirs, whatever it's called now (UPGRADING.md).
+- RULES.md requires AGENTS.md to record the rules version a repo follows,
+  so it's clear which UPGRADING.md entries it still needs.
+
+### Fixed
+
+- Compiled firmware couldn't reach the host: builds live in a Docker
+  volume, so the `.factory.bin` the docs say to upload to web.esphome.io
+  didn't exist on disk. New `firmware` compose service compiles and copies
+  `<name>.factory.bin`/`.ota.bin` to `dist/` (`scripts/export-firmware.py`);
+  README templates document the flashing steps.
+- Release workflow: a merged release PR's run and a run for the tag it
+  pushes no longer race to publish the same release. Concurrency is per
+  version, tag pushes by github-actions[bot] are skipped, and publishing
+  skips a release that already exists.
+
 ## [0.6.0] - 2026-10-11
 
 ### Added
