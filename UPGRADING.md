@@ -18,7 +18,7 @@ update something, add an entry here in the same PR, headed
 needed for something a release shipped; a bug fixed before its release
 needs none.
 
-## Unreleased: record the rules version
+## v0.6.1: record the rules version
 
 Repos didn't record which version of these rules they follow, so there was
 no way to tell which entries here they still need.
@@ -29,7 +29,7 @@ no way to tell which entries here they still need.
   version you're upgrading the repo to. Before that, work out which
   entries below the repo already has by checking each one.
 
-## Unreleased: compose file is docker-compose.yaml
+## v0.6.1: compose file is docker-compose.yaml
 
 Do this before the other entries from the same release, which refer to the
 new name.
@@ -41,7 +41,7 @@ new name.
   `scripts/`, `renovate.json` descriptions). Commands don't change:
   `docker compose` finds `docker-compose.yaml` on its own.
 
-## Unreleased: compiled firmware unreachable from the host
+## v0.6.1: compiled firmware unreachable from the host
 
 `docker-compose.yaml` keeps builds in the `esphome-build` volume, so the
 `.factory.bin` needed for a first flash with web.esphome.io (the documented
@@ -54,7 +54,7 @@ path on macOS) never reaches the host.
   gitignored; point the README's flashing steps at
   `docker compose run --rm firmware` and `dist/<name>.factory.bin`.
 
-## Unreleased: release workflow can publish the same release twice
+## v0.6.1: release workflow can publish the same release twice
 
 `.github/workflows/release.yaml` grouped concurrency by event name, so a
 run for a merged `release/vX.Y.Z` PR and a run for the `vX.Y.Z` tag it
