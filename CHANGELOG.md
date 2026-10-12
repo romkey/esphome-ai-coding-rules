@@ -6,6 +6,21 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- UPGRADING.md: fixes that repos set up under older rules must apply, with
+  how to check and fix each. RULES.md §12 and the check skill tell AI
+  assistants re-scanning a repo to apply entries newer than the version
+  recorded in its AGENTS.md, and to add an entry when a rule change needs
+  existing repos updated.
+
+### Fixed
+
+- Release workflow: a merged release PR's run and a run for the tag it
+  pushes no longer race to publish the same release. Concurrency is per
+  version, tag pushes by github-actions[bot] are skipped, and publishing
+  skips a release that already exists.
+
 ## [0.6.0] - 2026-10-11
 
 ### Added

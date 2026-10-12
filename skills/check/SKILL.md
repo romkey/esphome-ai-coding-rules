@@ -8,8 +8,11 @@ disable-model-invocation: true
 Audit this repository against esphome-ai-coding-rules. Arguments:
 `$ARGUMENTS` (`fix` to apply fixes; otherwise only report).
 
-1. Read `${CLAUDE_PLUGIN_ROOT}/RULES.md` in full, and compare against the
-   files in `${CLAUDE_PLUGIN_ROOT}/templates/`.
+1. Read `${CLAUDE_PLUGIN_ROOT}/RULES.md` and
+   `${CLAUDE_PLUGIN_ROOT}/UPGRADING.md` in full, and compare against the
+   files in `${CLAUDE_PLUGIN_ROOT}/templates/`. Find the rules version this
+   repo follows in its AGENTS.md (missing means v0.0.0); every UPGRADING.md
+   entry newer than that is a finding, most important first.
 2. Check each section of RULES.md against this repo: layout, YAML
    conventions, examples (ESP32 + C3 + S3, base.yaml contents), Home
    Assistant conventions, components, compose.yaml, .gitignore, pre-commit,
@@ -33,6 +36,8 @@ Audit this repository against esphome-ai-coding-rules. Arguments:
    with the file and a one-line fix. Note anything that is deliberately
    different (e.g. a library without firmware/) as fine, not a finding.
 7. With `fix`: apply the fixes, re-run validate and lint, update
-   CHANGELOG.md under Unreleased, and summarize. Ask before anything
+   CHANGELOG.md under Unreleased, set the version line in AGENTS.md to the
+   `version` in `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`, and
+   summarize. Ask before anything
    destructive, such as deleting or renaming files that users may reference
    (packages, substitutions, entity names are breaking changes).

@@ -13,6 +13,7 @@ projects, and a Claude Code plugin that applies them.
   installable firmware and a web installer.
 - `skills/`: Claude Code plugin skills `new`, `check`, `release`, `rules`.
 - `.claude-plugin/`: plugin + marketplace manifests.
+- `UPGRADING.md`: fixes existing repos must apply, newest first.
 - `docs/releasing.md`: release strategy. `docs/claude-code.md`: plugin use.
   `docs/configuration.md`: what each template file is and what to change.
 - `scripts/sync-ci.py`: generates `.github/workflows/ci.yaml` from the

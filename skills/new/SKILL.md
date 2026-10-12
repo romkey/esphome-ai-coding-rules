@@ -29,7 +29,9 @@ Arguments: `$ARGUMENTS` (repo name, then `library` or `app`; both optional).
    datasheet added to `datasheets/`, add its `-license.txt` per
    `datasheets/README.md`; ask for the source URL rather than guessing.
 7. Fill in placeholders everywhere: `REPO` → repo name, `PROJECT` → title,
-   `romkey.REPO` → `romkey.<repo-name>`, the LICENSE year → current year.
+   `romkey.REPO` → `romkey.<repo-name>`, the LICENSE year → current year,
+   and the `vX.Y.Z` in AGENTS.md → the `version` in
+   `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`.
    Replace `packages/example.yaml` and the README/docs prose with the real
    project, or leave them clearly marked as TODO if details are missing.
 8. Look up current versions (RULES.md §8): the latest esphome-lib tag and

@@ -21,6 +21,7 @@ releases projects that follow them.
 | [templates/](templates/) | A buildable example project: packages, ESP32/C3/S3 examples, Docker, CI, release workflow, pre-commit, Renovate, docs skeletons |
 | [templates/optional/firmware-publishing/](templates/optional/firmware-publishing/) | Add-on for apps: firmware on every release plus a browser installer |
 | [skills/](skills/), [.claude-plugin/](.claude-plugin/) | The `esphome-rules` Claude Code plugin |
+| [UPGRADING.md](UPGRADING.md) | Fixes repos set up under older rules must apply |
 | [SECURITY.md](SECURITY.md) | How to report a vulnerability |
 | [docs/](docs/) | [Release strategy](docs/releasing.md), [Claude Code usage](docs/claude-code.md), [configuration guide](docs/configuration.md), [overview](docs/overview.md) |
 

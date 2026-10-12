@@ -368,7 +368,15 @@ follow these rules, plus anything project-specific.
   confirmation; if it already has one, ask whether to keep it.
 - The license covers the repo's own work, not `datasheets/` (§5).
 
-## 12. Before finishing
+## 12. Keeping repos current
+
+These rules change. When you re-scan a repo that already follows them,
+read [UPGRADING.md](UPGRADING.md) and apply every entry newer than the
+version in the repo's `AGENTS.md` ("Follows esphome-ai-coding-rules
+vX.Y.Z"), then update that line. When you change these rules in a way
+existing repos must follow, add an entry to UPGRADING.md in the same PR.
+
+## 13. Before finishing
 
 - `docker compose run --rm validate` passes for every config (and `build`
   for C++ or framework changes).
